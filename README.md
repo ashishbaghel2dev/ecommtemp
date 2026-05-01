@@ -1,58 +1,263 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# eCommerce Laravel Template
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel eCommerce starter project with client and admin layout scaffolding, custom authentication, social login routes, and role-based access control. It is set up as a foundation for building storefront, product catalog, cart, checkout, order, and admin dashboard features.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 13 project structure
+- Email and password registration
+- Email and password login
+- Google and Facebook login routes with Laravel Socialite
+- Role enum for `user`, `admin`, and `super_admin`
+- Role middleware for protected routes
+- User status, avatar, phone, verification, and login tracking fields
+- Soft deletes for users
+- Separate Blade layout folders for client and admin views
+- Vite asset pipeline with Bootstrap, Sass, and Tailwind CSS
+- PHPUnit test setup
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP `^8.3`
+- Laravel `^13.0`
+- Laravel Socialite
+- Laravel UI
+- Vite
+- Bootstrap
+- Tailwind CSS
+- Sass
+- PHPUnit
 
-## Learning Laravel
+## Requirements
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Install these before running the project:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.3 or newer
+- Composer
+- Node.js and npm
+- MySQL, MariaDB, PostgreSQL, or SQLite
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Installation
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Install PHP dependencies:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Install frontend dependencies:
 
-## Contributing
+```bash
+npm install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Create the environment file:
 
-## Code of Conduct
+```bash
+cp .env.example .env
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Generate the Laravel app key:
 
-## Security Vulnerabilities
+```bash
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Update the database settings in `.env`, then run migrations:
+
+```bash
+php artisan migrate
+```
+
+Build frontend assets:
+
+```bash
+npm run build
+```
+
+## Running The App
+
+Start Laravel:
+
+```bash
+php artisan serve
+```
+
+Start Vite in a second terminal:
+
+```bash
+npm run dev
+```
+
+The local app usually runs at:
+
+```text
+http://127.0.0.1:8000
+```
+
+You can also use the combined development command:
+
+```bash
+composer run dev
+```
+
+This runs the Laravel server, queue listener, log tailing, and Vite together.
+
+## Authentication Routes
+
+```text
+GET  /register                Show registration page
+POST /register                Create a new user account
+GET  /login                   Show login page
+POST /login                   Login with email and password
+GET  /auth/google/redirect    Redirect to Google
+GET  /auth/google/callback    Handle Google callback
+GET  /auth/facebook/redirect  Redirect to Facebook
+GET  /auth/facebook/callback  Handle Facebook callback
+```
+
+After login, users are redirected by role:
+
+```text
+admin        -> /admin/dashboard
+super_admin  -> /super-admin/dashboard
+user         -> /dashboard
+```
+
+## Social Login Setup
+
+Social authentication uses Laravel Socialite. Add provider credentials to `.env` and make sure `config/services.php` contains matching provider configuration.
+
+```env
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+FACEBOOK_REDIRECT_URI=
+```
+
+Local callback URLs:
+
+```text
+http://127.0.0.1:8000/auth/google/callback
+http://127.0.0.1:8000/auth/facebook/callback
+```
+
+## Roles And Middleware
+
+Roles are defined in:
+
+```text
+app/Enums/UserRole.php
+```
+
+Available roles:
+
+- `user`
+- `admin`
+- `super_admin`
+
+The role middleware is implemented in:
+
+```text
+app/Http/Middleware/RoleMiddleware.php
+```
+
+It is registered in:
+
+```text
+bootstrap/app.php
+```
+
+Example protected route:
+
+```php
+Route::prefix('admin')
+    ->middleware(['auth', 'verified', 'role:admin'])
+    ->group(function () {
+        Route::get('/dashboard', function () {
+            return "Admin Dashboard";
+        });
+    });
+```
+
+## Main Routes
+
+```text
+GET /                  Client home page
+GET /home              Authenticated home/dashboard view
+GET /login             Login page
+POST /login            Login action
+GET /register          Register page
+POST /register         Register action
+GET /admin/dashboard   Admin dashboard placeholder
+```
+
+## Project Structure
+
+```text
+app/
+  Enums/               User role enum
+  Http/Controllers/    Auth and home controllers
+  Http/Middleware/     Role middleware
+  Models/              Eloquent models
+
+database/
+  migrations/          Database schema
+  seeders/             Seed data
+
+resources/
+  views/auth/          Login and registration views
+  views/client/        Client-facing layout and pages
+  views/admin/         Admin layout includes
+  sass/                Sass entry files
+  js/                  JavaScript entry files
+
+routes/
+  web.php              Web routes
+```
+
+## Useful Commands
+
+Run migrations:
+
+```bash
+php artisan migrate
+```
+
+Run tests:
+
+```bash
+composer test
+```
+
+Format PHP code:
+
+```bash
+vendor/bin/pint
+```
+
+Build production assets:
+
+```bash
+npm run build
+```
+
+Clear config cache:
+
+```bash
+php artisan config:clear
+```
+
+## Current Notes
+
+- The client home page is currently a basic placeholder.
+- The admin dashboard route currently returns a placeholder response.
+- Product, category, cart, checkout, order, and admin CRUD modules still need to be implemented.
+- `/dashboard` and `/super-admin/dashboard` are referenced by login redirects but are not fully defined yet.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is based on Laravel and uses the MIT license.
