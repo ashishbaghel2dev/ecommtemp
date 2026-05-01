@@ -1,0 +1,20 @@
+:root {
+  /* Typography */
+  --font-main: 'Inter', sans-serif;
+  --font-logo: 'Playfair Display', serif; /* For that high-fashion logo feel */
+  
+  --font-size-xs: 10px;   /* Taglines */
+  --font-size-sm: 12px;   /* Category links */
+  --font-size-base: 14px; /* Standard text */
+  --font-size-lg: 28px;   /* Brand Logo */
+  
+  --font-weight-light: 300;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --letter-spacing-wide: 8px; /* Used for the brand logo spacing */
+
+  /* Layout Spacing */
+  --container-padding: 40px;
+  --nav-height: 80px;
+  --border-radius-sm: 4px;
+}

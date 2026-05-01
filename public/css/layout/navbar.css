@@ -1,0 +1,120 @@
+/* Container */
+.main-header {
+    width: 100%;
+    background: #fff;
+    font-family: 'Inter', sans-serif; /* High-end fashion vibe */
+}
+
+/* Header Main (Top Tier) */
+.header-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 40px;
+    border-bottom: 1px solid #eee;
+}
+
+.nav-left {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+}
+
+.nav-left .luxe { color: #b07d4e; font-weight: bold; }
+
+/* Logo Section */
+.nav-center {
+    flex: 1;
+    text-align: center;
+}
+
+.brand-logo {
+    font-size: 28px;
+    letter-spacing: 8px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.brand-logo span {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 4px;
+    font-weight: 400;
+    margin-top: -5px;
+}
+
+/* Search and Utilities */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.search-container {
+    display: flex;
+    background: #f5f5f5;
+    padding: 5px 15px;
+    border-radius: 4px;
+}
+
+.search-container input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 12px;
+    width: 180px;
+}
+
+.utility-icons {
+    display: flex;
+    gap: 15px;
+    font-size: 18px;
+}
+
+/* Category Strip (Bottom Tier) */
+.category-strip {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.btn-ready {
+    background: #b07d4e;
+    color: #fff !important;
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+.active-cat {
+    background: #2d2d3e;
+    color: #fff !important;
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+.sale { color: #d9534f; }
+
+
+
+.btn-ready {
+    background: var(--color-accent);
+    color: var(--color-white);
+    padding: 4px 12px;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-fast);
+}
+
+.brand-logo {
+    font-family: var(--font-logo);
+    font-size: var(--font-size-lg);
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-black);
+}
