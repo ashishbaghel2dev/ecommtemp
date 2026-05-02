@@ -16,7 +16,7 @@ class RoleMiddleware
         }
 
         if (!in_array($user->role->value, $roles)) {
-            abort(403, 'Access Denied');
+            abort(403);
         }
 
         return $next($request);

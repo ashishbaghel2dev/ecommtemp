@@ -10,7 +10,7 @@
     </div>
 
     <div class="nav-center">
-      <h1 class="brand-logo">KALKI<span>FASHION</span></h1>
+      <h1 class="brand-logo">NAKLI<span>FASHION</span></h1>
     </div>
 
     <div class="nav-right">

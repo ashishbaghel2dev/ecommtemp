@@ -3,15 +3,21 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\DashboardController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+
+
 
 /*
 |------------------------
 | PUBLIC ROUTES
 |------------------------
 */
-Route::get('/', function () {
-    return view('client.home.home');
-});
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+
 
 /*
 |------------------------
@@ -25,18 +31,29 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/register', [RegisterController::class, 'register']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 
-
-
 Route::prefix('auth/google')->group(function () {
     Route::get('/redirect', [LoginController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/callback', [LoginController::class, 'handleGoogleCallback']);
 });
 
-// Facebook Authentication Routes
-Route::prefix('auth/facebook')->group(function () {
-    Route::get('/redirect', [LoginController::class, 'redirectToFacebook'])->name('auth.facebook');
-    Route::get('/callback', [LoginController::class, 'handleFacebookCallback']);
+
+
+/*
+|------------------------
+| USER ROUTES
+|------------------------
+*/
+
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+
 });
+
+
+
 
 
 
@@ -47,21 +64,22 @@ Route::prefix('auth/facebook')->group(function () {
 |------------------------
 */
 Route::prefix('admin')
-    ->middleware(['auth', 'verified', 'role:admin'])
+    ->middleware(['auth', 'role:admin'])
     ->group(function () {
 
-        Route::get('/dashboard', function () {
-            return "Admin Dashboard";
-        });
+     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('home');
 
-    });
+ });
 
 
 
 
+/*
+|------------------------
+| SUPER ADMIN ROUTES
+|------------------------
+*/
 
 
 
 
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
