@@ -37,6 +37,10 @@ Route::prefix('auth/google')->group(function () {
 });
 
 
+Route::get('/otp/{id}', [RegisterController::class, 'showOtpForm'])->name('otp.form');
+Route::post('/otp-verify', [RegisterController::class, 'verifyOtp'])->name('otp.verify');
+
+
 
 /*
 |------------------------

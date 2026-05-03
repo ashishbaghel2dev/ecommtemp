@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+
 
 class RegisterController 
 {
@@ -26,36 +29,81 @@ class RegisterController
      * -------------------------
      */
     public function register(Request $request)
-    {
-        // ✅ Validation
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
-        ], [
-            'name.required' => 'Name is required',
-            'email.required' => 'Email is required',
-            'email.unique' => 'Email already exists',
-            'password.min' => 'Password must be at least 8 characters',
-            'password.confirmed' => 'Password confirmation does not match',
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|min:8|confirmed',
+    ]);
 
-        // 👤 Create user
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password), // 🔐 hashing
-            'role' => 'user',
-            'status' => true,
-        ]);
+    // 🔢 Generate OTP
+    $otp = rand(100000, 999999);
 
-        // 📧 Email verification trigger (Laravel built-in)
-        event(new Registered($user));
+    // 👤 Create user
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role' => 'user',
+        'status' => false, // ❗ not active yet
+        'otp' => $otp,
+        'otp_expires_at' => now()->addMinutes(10),
+    ]);
 
-        // 🔐 Auto login after register (optional but common in eCommerce)
-        Auth::login($user);
-        $request->session()->regenerate();
+    // 📧 Send OTP Mail
+    Mail::raw("Your OTP is: $otp", function ($message) use ($user) {
+        $message->to($user->email)
+                ->subject('Your OTP Code');
+    });
 
-        return redirect('/dashboard')->with('success', 'Registration successful!');
+    // 👉 Redirect to OTP page
+    return redirect()->route('otp.form', $user->id)
+        ->with('success', 'OTP sent to your email');
+}
+
+public function showOtpForm($id)
+{
+    $user = User::findOrFail($id);
+    return view('auth.verifyOtp', compact('user'));
+}
+
+
+public function verifyOtp(Request $request)
+{
+    $request->validate([
+        'otp' => 'required',
+        'user_id' => 'required'
+    ]);
+
+    $user = User::find($request->user_id);
+
+    if (!$user) {
+        return back()->withErrors(['Invalid user']);
     }
+
+    // ❌ Wrong OTP
+    if ($user->otp != $request->otp) {
+        return back()->withErrors(['Invalid OTP']);
+    }
+
+    // ⏳ Expired OTP
+    if ($user->otp_expires_at < now()) {
+        return back()->withErrors(['OTP expired']);
+    }
+
+    // ✅ Verified
+    $user->update([
+        'status' => true,
+        'email_verified_at' => now(),
+        'otp' => null,
+    ]);
+
+    // 🔐 Login
+    Auth::login($user);
+
+    return redirect('/dashboard')->with('success', 'Account verified!');
+}
+
+
+
 }
