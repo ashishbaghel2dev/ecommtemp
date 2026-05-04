@@ -28,7 +28,7 @@ class RegisterController
      * DEFAULT REGISTER (EMAIL)
      * -------------------------
      */
-    public function register(Request $request)
+public function register(Request $request)
 {
     $request->validate([
         'name' => 'required|string|max:255',
@@ -39,70 +39,75 @@ class RegisterController
     // 🔢 Generate OTP
     $otp = rand(100000, 999999);
 
-    // 👤 Create user
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'role' => 'user',
-        'status' => false, // ❗ not active yet
-        'otp' => $otp,
-        'otp_expires_at' => now()->addMinutes(10),
+    // 🧠 Store in session (temporary)
+    session([
+        'register_data' => [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
+        ]
     ]);
 
-    // 📧 Send OTP Mail
-    Mail::raw("Your OTP is: $otp", function ($message) use ($user) {
-        $message->to($user->email)
+    // 📧 Send OTP
+    Mail::raw("Your OTP is: $otp", function ($message) use ($request) {
+        $message->to($request->email)
                 ->subject('Your OTP Code');
     });
 
-    // 👉 Redirect to OTP page
-    return redirect()->route('otp.form', $user->id)
+    return redirect()->route('otp.form')
         ->with('success', 'OTP sent to your email');
 }
 
-public function showOtpForm($id)
-{
-    $user = User::findOrFail($id);
-    return view('auth.verifyOtp', compact('user'));
-}
+    
 
+public function showOtpForm()
+{
+    return view('auth.verifyOtp');
+}
 
 public function verifyOtp(Request $request)
 {
     $request->validate([
         'otp' => 'required',
-        'user_id' => 'required'
     ]);
 
-    $user = User::find($request->user_id);
+    $data = session('register_data');
 
-    if (!$user) {
-        return back()->withErrors(['Invalid user']);
+    if (!$data) {
+        return redirect()->route('register')->withErrors(['Session expired']);
     }
 
     // ❌ Wrong OTP
-    if ($user->otp != $request->otp) {
+    if ($data['otp'] != $request->otp) {
         return back()->withErrors(['Invalid OTP']);
     }
 
-    // ⏳ Expired OTP
-    if ($user->otp_expires_at < now()) {
+    // ⏳ Expired
+    if ($data['otp_expires_at'] < now()) {
         return back()->withErrors(['OTP expired']);
     }
 
-    // ✅ Verified
-    $user->update([
+    // ✅ CREATE USER NOW
+    $user = User::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => $data['password'],
+        'role' => 'user',
         'status' => true,
         'email_verified_at' => now(),
-        'otp' => null,
     ]);
+
+    // 🧹 Clear session
+    session()->forget('register_data');
 
     // 🔐 Login
     Auth::login($user);
 
-    return redirect('/dashboard')->with('success', 'Account verified!');
+    return redirect('/dashboard')->with('success', 'Account created & verified!');
 }
+
 
 
 

@@ -137,6 +137,21 @@ class LoginController
     return redirect('/dashboard');
 }
 
+
+
+public function logout(Request $request)
+{
+    Auth::logout();
+
+    // 🧹 destroy session
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/login')->with('success', 'Logged out successfully');
+}
+
+
+
 }
 
 

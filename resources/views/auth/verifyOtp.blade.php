@@ -29,7 +29,7 @@
                 <form method="POST" action="{{ route('otp.verify') }}">
                     @csrf
 
-                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                    <!-- ❌ removed user_id -->
 
                     <div class="mb-3">
                         <label>Enter OTP</label>
