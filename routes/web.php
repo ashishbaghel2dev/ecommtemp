@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\AttributeController;
+use App\Http\Controllers\Admin\AttributeValueController;
 
 
 /*
@@ -113,6 +114,14 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::get('/attributes/{id}/edit', [AttributeController::class, 'edit'])->name('attributes.edit');
     Route::put('/attributes/{id}', [AttributeController::class, 'update'])->name('attributes.update');
     Route::delete('/attributes/{id}', [AttributeController::class, 'destroy'])->name('attributes.destroy');
+
+    Route::get('/attribute-values', [AttributeValueController::class, 'index'])->name('attribute-values.index');
+    Route::get('/attribute-values/create', [AttributeValueController::class, 'create'])->name('attribute-values.create');
+    Route::post('/attribute-values', [AttributeValueController::class, 'store'])->name('attribute-values.store');
+    Route::get('/attribute-values/{id}/edit', [AttributeValueController::class, 'edit'])->name('attribute-values.edit');
+    Route::put('/attribute-values/{id}', [AttributeValueController::class, 'update'])->name('attribute-values.update');
+    Route::delete('/attribute-values/{id}', [AttributeValueController::class, 'destroy'])->name('attribute-values.destroy');
+
 
 });
 
