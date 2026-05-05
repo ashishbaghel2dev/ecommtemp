@@ -9,6 +9,8 @@ use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\SubCategoryController;
+
 
 /*
 |------------------------
@@ -95,6 +97,14 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::get('/categories/{id}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+    Route::get('/subcategories', [SubCategoryController::class, 'index'])->name('subcategories.index');
+    Route::get('/subcategories/create', [SubCategoryController::class, 'create'])->name('subcategories.create');
+    Route::post('/subcategories', [SubCategoryController::class, 'store'])->name('subcategories.store');
+    Route::get('/subcategories/{id}/edit', [SubCategoryController::class, 'edit'])->name('subcategories.edit');
+    Route::put('/subcategories/{id}', [SubCategoryController::class, 'update'])->name('subcategories.update');
+    Route::delete('/subcategories/{id}', [SubCategoryController::class, 'destroy'])->name('subcategories.destroy');
+
 
 });
 
