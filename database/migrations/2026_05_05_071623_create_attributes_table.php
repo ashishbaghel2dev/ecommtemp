@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('attributes', function (Blueprint $table) {
             $table->id();
-
-            // relation
             $table->foreignId('subcategory_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('code')->unique();
             $table->enum('type', ['text', 'select', 'number', 'boolean']);
             $table->boolean('is_required')->default(false);
             $table->boolean('is_filterable')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

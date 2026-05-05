@@ -10,6 +10,7 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SubCategoryController;
+use App\Http\Controllers\Admin\AttributeController;
 
 
 /*
@@ -105,6 +106,13 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::put('/subcategories/{id}', [SubCategoryController::class, 'update'])->name('subcategories.update');
     Route::delete('/subcategories/{id}', [SubCategoryController::class, 'destroy'])->name('subcategories.destroy');
 
+
+    Route::get('/attributes', [AttributeController::class, 'index'])->name('attributes.index');
+    Route::get('/attributes/create', [AttributeController::class, 'create'])->name('attributes.create');
+    Route::post('/attributes', [AttributeController::class, 'store'])->name('attributes.store');
+    Route::get('/attributes/{id}/edit', [AttributeController::class, 'edit'])->name('attributes.edit');
+    Route::put('/attributes/{id}', [AttributeController::class, 'update'])->name('attributes.update');
+    Route::delete('/attributes/{id}', [AttributeController::class, 'destroy'])->name('attributes.destroy');
 
 });
 
