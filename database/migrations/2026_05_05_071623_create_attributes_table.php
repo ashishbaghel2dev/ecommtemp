@@ -11,19 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('social_media_links', function (Blueprint $table) {
+        Schema::create('attributes', function (Blueprint $table) {
             $table->id();
+
+            // relation
+            $table->foreignId('subcategory_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('url');
-            $table->string('icon')->nullable(); 
-            $table->integer('priority')->default(0);
-            $table->boolean('is_active')->default(true);
-            $table->integer('clicks')->default(0);
-            $table->softDeletes();
+            $table->string('code')->unique();
+            $table->enum('type', ['text', 'select', 'number', 'boolean']);
+            $table->boolean('is_required')->default(false);
+            $table->boolean('is_filterable')->default(false);
             $table->timestamps();
         });
-
     }
 
     /**
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('social_media_links');
+        Schema::dropIfExists('attributes');
     }
 };

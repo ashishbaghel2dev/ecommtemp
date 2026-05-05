@@ -58,6 +58,7 @@ class NotificationService
     /**
      * Mark as read
      */
+
     public static function markAsRead($id, $userId)
     {
         return Notification::where('id', $id)
@@ -65,3 +66,4 @@ class NotificationService
             ->update(['is_read' => true]);
     }
 }
+    

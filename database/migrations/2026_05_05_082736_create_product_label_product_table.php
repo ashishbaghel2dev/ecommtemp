@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('banners', function (Blueprint $table) {
+        Schema::create('product_label_product', function (Blueprint $table) {
             $table->id();
-            $table->string('image'); 
-            $table->string('link')->nullable(); 
-            $table->boolean('is_active')->default(true);
-            $table->integer('priority')->default(0);
-            $table->string('position')->default('home_slider');
-            $table->softDeletes();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_label_id')->constrained()->cascadeOnDelete();
+
+             $table->unique(['product_id', 'product_label_id']);
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('banners');
+        Schema::dropIfExists('product_label_product');
     }
 };
