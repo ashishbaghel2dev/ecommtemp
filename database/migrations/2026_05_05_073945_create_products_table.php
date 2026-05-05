@@ -17,10 +17,13 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('subcategory_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('sku')->unique();
             $table->text('short_description')->nullable();
             $table->longText('description')->nullable();
+            $table->fullText('name');
+            $table->fullText('short_description');
+            $table->fullText('description');
+            $table->string('slug')->unique();
+            $table->string('sku')->unique();
             $table->decimal('price', 10, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->decimal('sale_price', 10, 2)->nullable();

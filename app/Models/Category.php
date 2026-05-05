@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    use SoftDeletes;
+   use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -22,6 +22,7 @@ class Category extends Model
         'meta_title',
         'meta_description',
     ];
+    
 
     /*
     |--------------------------------------------------------------------------

@@ -5,21 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
-class BannerController 
+class BannerController extends Controller
 {
+    // 📋 LIST
     public function index()
     {
         $banners = Banner::orderBy('priority')->latest()->get();
         return view('admin.pages.banners.banners', compact('banners'));
     }
 
+    // ➕ CREATE FORM
     public function create()
     {
         return view('admin.pages.banners.create');
     }
 
+    // 💾 STORE (PUBLIC FOLDER)
     public function store(Request $request)
     {
         $request->validate([
@@ -27,24 +29,38 @@ class BannerController
             'link' => 'nullable|url',
         ]);
 
-        $path = $request->file('image')->store('banners', 'public');
-
-        Banner::create([
-            'image' => $path,
-            'link' => $request->link,
-            'priority' => $request->priority ?? 0,
-            'position' => $request->position ?? 'home_slider',
-            'is_active' => $request->has('is_active'),
+        $data = $request->only([
+            'link',
+            'priority',
+            'position'
         ]);
 
-        return redirect()->route('banners.index')->with('success', 'Banner created');
+        $data['is_active'] = $request->has('is_active');
+
+        // 🖼️ IMAGE UPLOAD (PUBLIC)
+        if ($request->hasFile('image')) {
+
+            $image = $request->file('image');
+            $imageName = time() . '_banner_' . $image->getClientOriginalName();
+
+            $image->move(public_path('banners'), $imageName);
+
+            $data['image'] = 'banners/' . $imageName;
+        }
+
+        Banner::create($data);
+
+        return redirect()->route('banners.index')
+            ->with('success', 'Banner Created Successfully');
     }
 
+    // ✏️ EDIT
     public function edit(Banner $banner)
     {
         return view('admin.pages.banners.edit', compact('banner'));
     }
 
+    // 🔄 UPDATE (DELETE OLD + UPLOAD NEW)
     public function update(Request $request, Banner $banner)
     {
         $request->validate([
@@ -52,35 +68,52 @@ class BannerController
             'link' => 'nullable|url',
         ]);
 
-        if ($request->hasFile('image')) {
-            // delete old image
-            if ($banner->image && Storage::disk('public')->exists($banner->image)) {
-                Storage::disk('public')->delete($banner->image);
-            }
-
-            $banner->image = $request->file('image')->store('banners', 'public');
-        }
-
-        $banner->update([
-            'link' => $request->link,
-            'priority' => $request->priority ?? 0,
-            'position' => $request->position ?? 'home_slider',
-            'is_active' => $request->has('is_active'),
+        $data = $request->only([
+            'link',
+            'priority',
+            'position'
         ]);
 
-        return redirect()->route('banners.index')->with('success', 'Banner updated');
-    }
+        $data['is_active'] = $request->has('is_active');
 
-    public function destroy(Banner $banner)
-    {
-        if ($banner->image && Storage::disk('public')->exists($banner->image)) {
-            Storage::disk('public')->delete($banner->image);
+        // 🖼️ IMAGE UPDATE
+        if ($request->hasFile('image')) {
+
+            // delete old image
+            if ($banner->image && file_exists(public_path($banner->image))) {
+                unlink(public_path($banner->image));
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '_banner_' . $image->getClientOriginalName();
+
+            $image->move(public_path('banners'), $imageName);
+
+            $data['image'] = 'banners/' . $imageName;
         }
 
-        $banner->delete();
+        $banner->update($data);
 
-        return back()->with('success', 'Banner deleted');
+        return redirect()->route('banners.index')
+            ->with('success', 'Banner Updated Successfully');
     }
 
+    // ❌ DELETE (FILE + DB)
+    public function destroy(Banner $banner)
+    {
+        try {
 
+            // delete image file
+            if ($banner->image && file_exists(public_path($banner->image))) {
+                unlink(public_path($banner->image));
+            }
+
+            $banner->delete();
+
+            return back()->with('success', 'Banner Deleted Successfully');
+
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
 }
