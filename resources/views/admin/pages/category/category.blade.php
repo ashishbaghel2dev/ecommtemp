@@ -83,7 +83,7 @@
                         <th width="150">Action</th>
                     </tr>
                 </thead>
-
+                
                 <tbody>
                     @forelse($categories as $key => $category)
                         <tr>

@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-   use SoftDeletes;
+    use SoftDeletes;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fillable Fields
+    |--------------------------------------------------------------------------
+    */
 
     protected $fillable = [
         'name',
@@ -22,11 +28,22 @@ class Category extends Model
         'meta_title',
         'meta_description',
     ];
-    
 
     /*
     |--------------------------------------------------------------------------
-    | 🔗 Relationships
+    | Casts
+    |--------------------------------------------------------------------------
+    */
+
+    protected $casts = [
+        'is_active'    => 'boolean',
+        'show_on_home' => 'boolean',
+        'sort_order'   => 'integer',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
     |--------------------------------------------------------------------------
     */
 
@@ -42,13 +59,7 @@ class Category extends Model
         return $this->hasMany(Category::class, 'parent_id');
     }
 
-    // Recursive children (tree structure)
-    public function childrenRecursive()
-    {
-        return $this->children()->with('childrenRecursive');
-    }
-
-    // Products in this category
+    // Products Under Category
     public function products()
     {
         return $this->hasMany(Product::class);
@@ -56,43 +67,73 @@ class Category extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | 🔍 Scopes
+    | Query Scopes
     |--------------------------------------------------------------------------
     */
 
-    // Active categories only
+    // Active Categories
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    // Show on homepage
+    // Show On Homepage
     public function scopeHome($query)
     {
         return $query->where('show_on_home', true);
     }
 
+    // Parent Categories Only
+    public function scopeParent($query)
+    {
+        return $query->whereNull('parent_id');
+    }
+
+    // Child Categories Only
+    public function scopeChild($query)
+    {
+        return $query->whereNotNull('parent_id');
+    }
+
+    // Latest Categories
+    public function scopeLatestFirst($query)
+    {
+        return $query->latest();
+    }
+
+    // Sort By sort_order
+    public function scopeSorted($query)
+    {
+        return $query->orderBy('sort_order', 'asc');
+    }
+
     /*
     |--------------------------------------------------------------------------
-    | ⚙️ Helpers
+    | Helper Methods
     |--------------------------------------------------------------------------
     */
 
-    // Check if category is parent
+    // Check If Category Has Products
+    public function hasProducts()
+    {
+        return $this->products()->exists();
+    }
+
+    // Count Products
+    public function productsCount()
+    {
+        return $this->products()->count();
+    }
+
+    // Check If Parent Category
     public function isParent()
     {
         return is_null($this->parent_id);
     }
 
-    // Check if category has children
+    // Check If Has Child Categories
     public function hasChildren()
     {
         return $this->children()->exists();
     }
-
-    public function subcategories()
-{
-    return $this->hasMany(Subcategory::class);
-}
-
 }

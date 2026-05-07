@@ -22,13 +22,6 @@ class Attribute extends Model
     |--------------------------------------------------------------------------
     */
 
-    
-
-    // Subcategory
-    public function subcategory()
-    {
-        return $this->belongsTo(Subcategory::class);
-    }
 
     // Attribute Values (Red, Blue, S, M)
     public function values()

@@ -9,6 +9,10 @@ use App\Models\ProductAttributeValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\Category;
+use App\Models\SubCategory;
+
+
 
 class ProductController 
 {
@@ -31,11 +35,20 @@ class ProductController
     | CREATE FORM
     |--------------------------------------------------------------------------
     */
-    public function create()
-    {
-        return view('admin.pages.products.create');
-    }
 
+public function create()
+{
+    $categories = Category::active()
+        ->with('children')
+        ->parent()
+        ->sorted()
+        ->get();
+
+    return view(
+        'admin.pages.products.create',
+        compact('categories')
+    );
+}
     /*
     |--------------------------------------------------------------------------
     | STORE PRODUCT

@@ -9,11 +9,10 @@ use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\ProductController;
-
+use App\Http\Controllers\Admin\ProductLabelController;
 
 /*
 |------------------------
@@ -101,12 +100,6 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-    Route::get('/subcategories', [SubCategoryController::class, 'index'])->name('subcategories.index');
-    Route::get('/subcategories/create', [SubCategoryController::class, 'create'])->name('subcategories.create');
-    Route::post('/subcategories', [SubCategoryController::class, 'store'])->name('subcategories.store');
-    Route::get('/subcategories/{id}/edit', [SubCategoryController::class, 'edit'])->name('subcategories.edit');
-    Route::put('/subcategories/{id}', [SubCategoryController::class, 'update'])->name('subcategories.update');
-    Route::delete('/subcategories/{id}', [SubCategoryController::class, 'destroy'])->name('subcategories.destroy');
 
 
     Route::get('/attributes', [AttributeController::class, 'index'])->name('attributes.index');
@@ -123,7 +116,6 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::put('/attribute-values/{id}', [AttributeValueController::class, 'update'])->name('attribute-values.update');
     Route::delete('/attribute-values/{id}', [AttributeValueController::class, 'destroy'])->name('attribute-values.destroy');
 
-
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
@@ -131,6 +123,13 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
+    Route::get('/product-labels', [ProductLabelController::class, 'index'])->name('productlabels.index');
+    Route::get('/product-labels/create', [ProductLabelController::class, 'create'])->name('productlabels.create');
+    Route::post('/product-labels', [ProductLabelController::class, 'store'])->name('productlabels.store');
+    Route::get('/product-labels/{id}/edit', [ProductLabelController::class, 'edit'])->name('productlabels.edit');
+    Route::put('/product-labels/{id}', [ProductLabelController::class, 'update'])->name('productlabels.update');
+    Route::delete('/product-labels/{id}', [ProductLabelController::class, 'destroy'])->name('productlabels.destroy');
+    Route::get('/get-subcategories/{id}', [ProductController::class, 'getSubcategories']);
 
 
 });

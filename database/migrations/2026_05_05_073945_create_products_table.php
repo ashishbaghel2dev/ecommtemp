@@ -15,7 +15,6 @@ return new class extends Migration
 
             $table->id();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('subcategory_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->text('short_description')->nullable();
             $table->longText('description')->nullable();

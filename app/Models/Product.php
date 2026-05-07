@@ -8,14 +8,13 @@ class Product extends Model
 {
     protected $fillable = [
         'category_id',
-        'subcategory_id',
         'name',
         'slug',
         'sku',
         'short_description',
         'description',
         'price',
-         'discount_price',
+        'discount_price',
         'sale_price',
         'sale_start',
         'sale_end',
@@ -37,42 +36,35 @@ class Product extends Model
     |--------------------------------------------------------------------------
     */
 
-    
-
+    // Category
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function subcategory()
-    {
-        return $this->belongsTo(Subcategory::class);
-    }
-
-    // simple product attributes
+    // Product Attributes
     public function attributeValues()
     {
         return $this->hasMany(ProductAttributeValue::class);
     }
 
-    // variants (for configurable)
+    // Product Variants
     public function variants()
     {
         return $this->hasMany(ProductVariant::class);
     }
 
-    // images (multiple)
+    // Multiple Images
     public function images()
     {
         return $this->hasMany(ProductImage::class);
     }
 
-
+    // Labels
     public function labels()
-{
-    return $this->belongsToMany(ProductLabel::class);
-}
-
+    {
+        return $this->belongsToMany(ProductLabel::class);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -96,14 +88,18 @@ class Product extends Model
     |--------------------------------------------------------------------------
     */
 
-    // final price logic
+    // Final Price
     public function getFinalPriceAttribute()
     {
-        if ($this->sale_price &&
-            now()->between($this->sale_start, $this->sale_end)) {
+        if (
+            $this->sale_price &&
+            $this->sale_start &&
+            $this->sale_end &&
+            now()->between($this->sale_start, $this->sale_end)
+        ) {
             return $this->sale_price;
         }
 
-        return $this->price;
+        return $this->discount_price ?: $this->price;
     }
 }
