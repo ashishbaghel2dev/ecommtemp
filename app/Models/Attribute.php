@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Attribute extends Model
 {
     protected $fillable = [
-        'subcategory_id',
+        'category_id',
         'name',
         'code',
         'type',
@@ -22,6 +22,10 @@ class Attribute extends Model
     |--------------------------------------------------------------------------
     */
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     // Attribute Values (Red, Blue, S, M)
     public function values()

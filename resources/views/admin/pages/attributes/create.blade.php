@@ -8,10 +8,10 @@
         <div class="card p-3">
 
             <div class="mb-3">
-                <label>SubCategory</label>
-                <select name="subcategory_id" class="form-control">
-                    @foreach($subcategories as $sub)
-                        <option value="{{ $sub->id }}">{{ $sub->name }}</option>
+                <label>Category</label>
+                <select name="category_id" class="form-control">
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                 </select>
             </div>

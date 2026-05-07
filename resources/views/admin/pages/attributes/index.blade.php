@@ -12,7 +12,7 @@
                 <th>#</th>
                 <th>Name</th>
                 <th>Code</th>
-                <th>SubCategory</th>
+                <th>Category</th>
                 <th>Type</th>
                 <th>Required</th>
                 <th>Filterable</th>
@@ -27,7 +27,7 @@
                     <td>{{ $attr->id }}</td>
                     <td>{{ $attr->name }}</td>
                     <td>{{ $attr->code }}</td>
-                    <td>{{ $attr->subcategory->name ?? '-' }}</td>
+                    <td>{{ $attr->category->name ?? '-' }}</td>
                     <td>{{ $attr->type }}</td>
                     <td>{{ $attr->is_required ? 'Yes' : 'No' }}</td>
                     <td>{{ $attr->is_filterable ? 'Yes' : 'No' }}</td>

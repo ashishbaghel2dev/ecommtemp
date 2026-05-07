@@ -1,4 +1,8 @@
 
+@extends('admin.layouts.app')
+
+@section('content')
+
 <div class="container">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -16,6 +20,12 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <table class="table table-bordered align-middle">
 
         <thead>
@@ -23,6 +33,8 @@
                 <th>ID</th>
                 <th>Image</th>
                 <th>Name</th>
+                <th>Category</th>
+                <th>Labels</th>
                 <th>SKU</th>
                 <th>Price</th>
                 <th>Stock</th>
@@ -40,8 +52,8 @@
                     <td>{{ $product->id }}</td>
 
                     <td>
-                        @if($product->images->first())
-                            <img src="{{ asset($product->images->first()->image) }}"
+                        @if($product->image || $product->images->first())
+                            <img src="{{ asset($product->image ?: $product->images->first()->image) }}"
                                  width="60"
                                  height="60"
                                  style="object-fit:cover;">
@@ -49,6 +61,18 @@
                     </td>
 
                     <td>{{ $product->name }}</td>
+
+                    <td>{{ $product->category->name ?? '-' }}</td>
+
+                    <td>
+                        @forelse($product->labels as $label)
+                            <span class="badge" style="background: {{ $label->color ?: '#6c757d' }}">
+                                {{ $label->name }}
+                            </span>
+                        @empty
+                            -
+                        @endforelse
+                    </td>
 
                     <td>{{ $product->sku }}</td>
 
@@ -97,7 +121,7 @@
             @empty
 
                 <tr>
-                    <td colspan="8" class="text-center">
+                    <td colspan="10" class="text-center">
                         No Products Found
                     </td>
                 </tr>
@@ -112,3 +136,4 @@
 
 </div>
 
+@endsection

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attribute;
-use App\Models\SubCategory;
+use App\Models\Category;
 use Illuminate\Support\Str;
 
 class AttributeController 
@@ -13,14 +12,14 @@ class AttributeController
     // 📋 LIST
     public function index(Request $request)
     {
-        $query = Attribute::with('subcategory');
+        $query = Attribute::with('category');
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        if ($request->filled('subcategory_id')) {
-            $query->where('subcategory_id', $request->subcategory_id);
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
         }
 
         $attributes = $query->latest()->get();
@@ -31,22 +30,22 @@ class AttributeController
     // ➕ CREATE
     public function create()
     {
-        $subcategories = SubCategory::all();
-        return view('admin.pages.attributes.create', compact('subcategories'));
+        $categories = Category::active()->sorted()->get();
+        return view('admin.pages.attributes.create', compact('categories'));
     }
 
     // 💾 STORE
     public function store(Request $request)
     {
         $request->validate([
-            'subcategory_id' => 'required|exists:subcategories,id',
+            'category_id' => 'required|exists:categories,id',
             'name' => 'required',
             'code' => 'required|unique:attributes',
             'type' => 'required|in:text,select,number,boolean',
         ]);
 
         Attribute::create([
-            'subcategory_id' => $request->subcategory_id,
+            'category_id' => $request->category_id,
             'name' => $request->name,
             'code' => Str::slug($request->code),
             'type' => $request->type,
@@ -63,9 +62,9 @@ class AttributeController
     public function edit($id)
     {
         $attribute = Attribute::findOrFail($id);
-        $subcategories = SubCategory::all();
+        $categories = Category::active()->sorted()->get();
 
-        return view('admin.pages.attributes.edit', compact('attribute', 'subcategories'));
+        return view('admin.pages.attributes.edit', compact('attribute', 'categories'));
     }
 
     // 🔄 UPDATE
@@ -74,14 +73,14 @@ class AttributeController
         $attribute = Attribute::findOrFail($id);
 
         $request->validate([
-            'subcategory_id' => 'required|exists:sub_categories,id',
+            'category_id' => 'required|exists:categories,id',
             'name' => 'required',
             'code' => 'required|unique:attributes,code,' . $attribute->id,
             'type' => 'required|in:text,select,number,boolean',
         ]);
 
         $attribute->update([
-            'subcategory_id' => $request->subcategory_id,
+            'category_id' => $request->category_id,
             'name' => $request->name,
             'code' => Str::slug($request->code),
             'type' => $request->type,

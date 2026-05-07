@@ -30,6 +30,15 @@ class Product extends Model
         'view_count',
     ];
 
+    protected $casts = [
+        'manage_stock' => 'boolean',
+        'in_stock' => 'boolean',
+        'is_featured' => 'boolean',
+        'is_active' => 'boolean',
+        'sale_start' => 'datetime',
+        'sale_end' => 'datetime',
+    ];
+
     /*
     |--------------------------------------------------------------------------
     | Relationships
@@ -63,7 +72,7 @@ class Product extends Model
     // Labels
     public function labels()
     {
-        return $this->belongsToMany(ProductLabel::class);
+        return $this->belongsToMany(ProductLabel::class, 'product_label_product');
     }
 
     /*

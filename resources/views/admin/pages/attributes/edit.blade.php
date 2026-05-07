@@ -9,11 +9,11 @@
         <div class="card p-3">
 
             <div class="mb-3">
-                <label>SubCategory</label>
-                <select name="subcategory_id" class="form-control">
-                    @foreach($subcategories as $sub)
-                        <option value="{{ $sub->id }}" {{ $attribute->subcategory_id == $sub->id ? 'selected' : '' }}>
-                            {{ $sub->name }}
+                <label>Category</label>
+                <select name="category_id" class="form-control">
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" {{ $attribute->category_id == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
                         </option>
                     @endforeach
                 </select>
