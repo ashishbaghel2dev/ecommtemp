@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductLabelController;
+use App\Http\Controllers\Client\ReviewController;
+use App\Http\Controllers\Admin\AdminReviewController ;
+
 
 /*
 |------------------------
@@ -68,7 +71,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications', [NotificationController::class, 'store']);
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markRead']);
 
+    Route::get('reviews', [ReviewController::class, 'index']);
+Route::get('reviews/{review}', [ReviewController::class, 'show']);
+
+
 });
+
+  Route::get('/reviews', [ReviewController::class, 'index'])
+        ->name('reviews.index');
+
+    Route::post('/reviews/store', [ReviewController::class, 'store'])
+        ->name('reviews.store');
+
+
+
+
 
 /*
 |------------------------
@@ -133,6 +150,14 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::get('/get-subcategories/{id}', [ProductController::class, 'getSubcategories']);
 
 
+    Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+    Route::get('/reviews/{review}', [AdminReviewController::class, 'show'])->name('reviews.show');
+    Route::post('/reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
+    Route::post('/reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
+    Route::post('/reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('reviews.reply');
+    Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::post('/reviews/{id}/restore', [AdminReviewController::class, 'restore'])->name('reviews.restore');
+
 });
 
 /*
@@ -143,3 +168,9 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
+
+
+
+
+
+

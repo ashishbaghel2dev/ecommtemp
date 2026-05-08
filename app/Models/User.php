@@ -64,4 +64,21 @@ class User extends Authenticatable
     {
         return $this->role === UserRole::USER;
     }
+
+    public function reviews()
+{
+    return $this->hasMany(Review::class);
+}
+
+public function reviewVotes()
+{
+    return $this->hasMany(ReviewVote::class);
+}
+
+public function reviewReports()
+{
+    return $this->hasMany(ReviewReport::class);
+}
+
+
 }

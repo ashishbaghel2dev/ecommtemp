@@ -111,4 +111,9 @@ class Product extends Model
 
         return $this->discount_price ?: $this->price;
     }
+
+    public function reviews()
+{
+    return $this->hasMany(Review::class);
+}
 }

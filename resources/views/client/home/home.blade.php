@@ -76,5 +76,8 @@
         @empty
             <p>No products found.</p>
         @endforelse
+
+
+        @include('client.home.review')
     </div>
 @endsection
