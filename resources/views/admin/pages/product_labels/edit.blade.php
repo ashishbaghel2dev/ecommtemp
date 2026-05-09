@@ -1,4 +1,12 @@
 
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
+
+
 <div class="container">
 
     <h2 class="mb-4">Edit Product Label</h2>
@@ -49,3 +57,4 @@
 
 </div>
 
+@endsection

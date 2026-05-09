@@ -1,3 +1,12 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
+
+
+
 <a href="{{ route('banners.create') }}">Add Banner</a>
 
 <table border="1">
@@ -27,3 +36,6 @@
     </tr>
     @endforeach
 </table>
+
+
+@endsection

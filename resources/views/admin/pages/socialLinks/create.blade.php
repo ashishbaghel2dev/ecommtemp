@@ -1,3 +1,10 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
+
 <form action="{{ route('social-links.store') }}" method="POST">
     @csrf
 
@@ -15,3 +22,5 @@
 
     <button type="submit">Save</button>
 </form>
+
+@endsection

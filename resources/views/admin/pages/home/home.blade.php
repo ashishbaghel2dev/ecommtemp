@@ -4,7 +4,7 @@
 
 @section('content')
 
-   <!-- Example Cards -->
+
             <div class="dashboard-card-grid">
 
                 <div class="dashboard-card">

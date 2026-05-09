@@ -1,3 +1,11 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
+
+
 @php
     $selectedCategory = old('category_id', $product->category_id ?? '');
     $selectedLabels = old(
@@ -354,3 +362,6 @@
     }
     toggleVariantSection();
 </script>
+
+
+@endsection

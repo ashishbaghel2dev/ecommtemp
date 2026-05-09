@@ -13,27 +13,23 @@
 
 <div class="dashboard-wrapper">
 
-    <!-- Sidebar -->
-    <aside class="dashboard-sidebar-box">
-        @include('admin.includes.sidebar')
-    </aside>
 
-    <!-- Main -->
+    @include('admin.includes.sidebar')
+
     <div class="dashboard-main">
 
-        <!-- Header -->
+
         <header class="dashboard-header">
             @include('admin.includes.header')
         </header>
 
-        <!-- Content -->
+
         <main class="dashboard-content">
             @yield('content')
 
-         
         </main>
 
-        <!-- Footer -->
+
         <footer class="dashboard-footer">
             @include('admin.includes.footer')
         </footer>

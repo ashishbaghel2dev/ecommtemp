@@ -1,3 +1,9 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
 <form action="{{ route('banners.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
 
@@ -15,3 +21,5 @@
 
     <button type="submit">Save</button>
 </form>
+
+@endsection

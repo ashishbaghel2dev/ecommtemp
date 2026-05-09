@@ -1,3 +1,9 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
 
 <div class="container-fluid py-4">
 
@@ -237,3 +243,6 @@
     </div>
 
 </div>
+
+
+@endsection

@@ -1,3 +1,9 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
 <form action="{{ route('social-links.update', $social_link->id) }}" method="POST">
     @csrf
     @method('PUT')
@@ -16,3 +22,5 @@
 
     <button type="submit">Update</button>
 </form>
+
+@endsection

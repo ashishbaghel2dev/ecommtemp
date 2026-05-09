@@ -1,3 +1,9 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
+
 <div class="container-fluid">
 
     <h4>Edit Attribute Value</h4>
@@ -48,3 +54,4 @@
     </form>
 
 </div>
+@endsection

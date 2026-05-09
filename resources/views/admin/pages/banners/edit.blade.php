@@ -1,3 +1,8 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Home Page')
+
+@section('content')
 <form action="{{ route('banners.update', $banner->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
@@ -18,3 +23,6 @@
 
     <button type="submit">Update</button>
 </form>
+
+
+@endsection
