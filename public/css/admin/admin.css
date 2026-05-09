@@ -9,3 +9,8 @@
 
 @import './layout/navbar.css';
 @import './layout/sidebar.css';
+
+
+@import './pages/category.css';
+@import './pages/form.css';
+@import './pages/products/form.css';

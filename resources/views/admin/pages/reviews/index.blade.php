@@ -4,243 +4,189 @@
 
 @section('content')
 
+<div class="main-content">
 
-<div class="container-fluid py-4">
 
-    {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Reviews</h2>
+    <div class="top-bar">
+        <h2 class="page-title">Categories</h2>
+        <p class="page-subtitle">Create and manage categories</p>
+        <a href="{{ route('categories.create') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> Add Category
+        </a>
     </div>
 
-    {{-- Success Message --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
 
-    {{-- Filters --}}
-    <div class="card mb-4">
-        <div class="card-body">
-{{-- {{ route('admin.reviews.index') }} --}}
-            <form method="GET" action="#">
+    <div class="filter-card">
+        <form method="GET" class="filter-form">
 
-                <div class="row">
 
-                    {{-- Search --}}
-                    <div class="col-md-4 mb-3">
-                        <input
-                            type="text"
-                            name="search"
-                            class="form-control"
-                            placeholder="Search review..."
-                            value="{{ request('search') }}"
-                        >
-                    </div>
+            <input type="text" name="search" class="input-field" placeholder="Search review..."
+                value="{{ request('search') }}">
 
-                    {{-- Status --}}
-                    <div class="col-md-3 mb-3">
-                        <select name="status" class="form-control">
 
-                            <option value="">All Status</option>
 
-                            <option value="pending"
-                                {{ request('status') == 'pending' ? 'selected' : '' }}>
-                                Pending
-                            </option>
+            <select name="status" class="input-field">
 
-                            <option value="approved"
-                                {{ request('status') == 'approved' ? 'selected' : '' }}>
-                                Approved
-                            </option>
+                <option value="">All Status</option>
 
-                            <option value="rejected"
-                                {{ request('status') == 'rejected' ? 'selected' : '' }}>
-                                Rejected
-                            </option>
+                <option value="pending" {{ request('status')=='pending' ? 'selected' : '' }}>
+                    Pending
+                </option>
 
-                        </select>
-                    </div>
+                <option value="approved" {{ request('status')=='approved' ? 'selected' : '' }}>
+                    Approved
+                </option>
 
-                    {{-- Rating --}}
-                    <div class="col-md-3 mb-3">
-                        <select name="rating" class="form-control">
+                <option value="rejected" {{ request('status')=='rejected' ? 'selected' : '' }}>
+                    Rejected
+                </option>
 
-                            <option value="">All Ratings</option>
+            </select>
 
-                            @for($i = 5; $i >= 1; $i--)
-                                <option value="{{ $i }}"
-                                    {{ request('rating') == $i ? 'selected' : '' }}>
-                                    {{ $i }} Star
-                                </option>
-                            @endfor
+            <select name="rating" class="input-field">
 
-                        </select>
-                    </div>
+                <option value="">All Ratings</option>
 
-                    {{-- Button --}}
-                    <div class="col-md-2 mb-3">
-                        <button class="btn btn-dark w-100">
-                            Filter
-                        </button>
-                    </div>
+                @for($i = 5; $i >= 1; $i--)
+                <option value="{{ $i }}" {{ request('rating')==$i ? 'selected' : '' }}>
+                    {{ $i }} Star
+                </option>
+                @endfor
 
-                </div>
+            </select>
 
-            </form>
+            <button class="btn-filter">
+                Filter
+            </button>
 
-        </div>
+
+        </form>
     </div>
 
-    {{-- Reviews Table --}}
-    <div class="card">
 
-        <div class="card-body table-responsive">
 
-            <table class="table table-bordered align-middle">
 
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>User</th>
-                        <th>Product</th>
-                        <th>Rating</th>
-                        <th>Title</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th width="250">Actions</th>
-                    </tr>
-                </thead>
+<div class="table-card">
+    <table class="custom-table">
 
-                <tbody>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Product</th>
+                <th>Rating</th>
+                <th>Title</th>
+                  <th>Comments</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th width="250">Actions</th>
+            </tr>
+        </thead>
 
-                    @forelse($reviews as $review)
+        <tbody>
 
-                        <tr>
+            @forelse($reviews as $review)
 
-                            <td>{{ $review->id }}</td>
+            <tr>
 
-                            <td>
-                                {{ $review->user->name ?? 'N/A' }}
-                            </td>
+                <td>{{ $review->id }}</td>
 
-                            <td>
-                                {{ $review->product->name ?? 'N/A' }}
-                            </td>
+                <td>
+                    {{ $review->user->name ?? 'N/A' }}
+                </td>
 
-                            <td>
-                                ⭐ {{ $review->rating }}
-                            </td>
+                <td>
+                    {{ $review->product->name ?? 'N/A' }}
+                </td>
 
-                            <td>
-                                {{ $review->title }}
-                            </td>
+                <td>
+                    
+                    <i class="ti ti-star " style="color: rgb(232, 197, 1); font-size: 19px;"></i> {{ $review->rating }}
+                </td>
 
-                            <td>
+                <td>
+                    {{ $review->title }}
+                </td>
 
-                                @if($review->status == 'approved')
+                <td>
+                    {{ $review->comment }}
+                </td>
 
-                                    <span class="badge bg-success">
-                                        Approved
-                                    </span>
+                <td>
 
-                                @elseif($review->status == 'rejected')
+                    @if($review->status == 'approved')
 
-                                    <span class="badge bg-danger">
-                                        Rejected
-                                    </span>
+                    <span class="badge bg-success">
+                        Approved
+                    </span>
 
-                                @else
+                    @elseif($review->status == 'rejected')
 
-                                    <span class="badge bg-warning text-dark">
-                                        Pending
-                                    </span>
+                    <span class="badge bg-danger">
+                        Rejected
+                    </span>
 
-                                @endif
+                    @else
 
-                            </td>
+                    <span class="badge bg-warning text-dark">
+                        Pending
+                    </span>
 
-                            <td>
-                                {{ $review->created_at->format('d M Y') }}
-                            </td>
+                    @endif
 
-                            <td>
+                </td>
 
-                                <div class="d-flex flex-wrap gap-2">
+                <td>
+                    {{ $review->created_at->format('d M Y') }}
+                </td>
 
-                                    {{-- View --}}
-                                    {{-- {{ route('admin.reviews.show', $review->id) }} --}}
-                                    <a href="#"
-                                       class="btn btn-sm btn-primary">
-                                        View
-                                    </a>
+                <td>
 
-                                    {{-- Approve --}}
-                                    {{-- {{ route('admin.reviews.approve', $review->id) }} --}}
-                                    <form method="POST"
-                                          action="#">
+                    <div class="product-image-box">
 
-                                        @csrf
+                        <a href="#" class="btn-icon edit" title="View">
+    <i class="ti ti-eye"></i>
+</a>
 
-                                        <button class="btn btn-sm btn-success">
-                                            Approve
-                                        </button>
-                                    </form>
+<button class="btn-icon grn" title="Approve">
+    <i class="ti ti-check"></i>
+</button>
 
-                                    {{-- Reject --}}
-                                    <form method="POST"
-                                    {{-- {{ route('admin.reviews.reject', $review->id) }} --}}
-                                          action="#">
+<button class="btn-icon delete" title="Reject">
+    <i class="ti ti-x"></i>
+</button>
 
-                                        @csrf
+<button class="btn-icon delete" title="Delete">
+    <i class="ti ti-trash"></i>
+</button>
+                    </div>
 
-                                        <button class="btn btn-sm btn-warning">
-                                            Reject
-                                        </button>
-                                    </form>
+                </td>
 
-                                    {{-- Delete --}}
-                                    <form method="POST"
-                                    {{-- {{ route('admin.reviews.destroy', $review->id) }} --}}
-                                          action="#"
-                                          onsubmit="return confirm('Delete this review?')">
+            </tr>
 
-                                        @csrf
-                                        @method('DELETE')
+            @empty
 
-                                        <button class="btn btn-sm btn-danger">
-                                            Delete
-                                        </button>
-                                    </form>
+            <tr>
+                <td colspan="8" class="text-center">
+                    No reviews found.
+                </td>
+            </tr>
 
-                                </div>
+            @endforelse
 
-                            </td>
+        </tbody>
 
-                        </tr>
+    </table>
 
-                    @empty
+</div>
 
-                        <tr>
-                            <td colspan="8" class="text-center">
-                                No reviews found.
-                            </td>
-                        </tr>
+</div>
 
-                    @endforelse
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-    {{-- Pagination --}}
-    <div class="mt-4">
-        {{ $reviews->withQueryString()->links() }}
-    </div>
+{{-- Pagination --}}
+<div class="mt-4">
+    {{ $reviews->withQueryString()->links() }}
+</div>
 
 </div>
 

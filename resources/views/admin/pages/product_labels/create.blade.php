@@ -1,56 +1,66 @@
-
 @extends('admin.layouts.app')
 
-@section('title', 'Home Page')
+@section('title', 'Create Product Label')
 
 @section('content')
-
-
-<div class="container">
-
-    <h2 class="mb-4">Create Product Label</h2>
-
-    <form action="{{ route('productlabels.store') }}"
-          method="POST">
-
-        @csrf
-
-        <div class="mb-3">
-            <label>Name</label>
-
-            <input type="text"
-                   name="name"
-                   class="form-control"
-                   required>
+<div class="main-content product-form-page">
+    <div class="product-form-hero">
+        <div class="product-form-heading">
+            <span class="product-form-step">5</span>
+            <div>
+                <h2 class="page-title">Create Product Label</h2>
+                <p class="page-subtitle">Create labels used to tag products</p>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label>Color</label>
+        <nav class="product-form-breadcrumb" aria-label="Breadcrumb">
+            <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+            <i class="ti ti-chevron-right"></i>
+            <a href="{{ route('productlabels.index') }}">Product Labels</a>
+            <i class="ti ti-chevron-right"></i>
+            <span>Create Product Label</span>
+        </nav>
+    </div>
 
-            <input type="color"
-                   name="color"
-                   class="form-control form-control-color">
-        </div>
+    @if($errors->any())
+        <div class="alert error">Please fix the highlighted fields and try again.</div>
+    @endif
 
-        <div class="mb-3">
+    <section class="product-form-shell">
+        <h3>Create Product Label</h3>
 
-            <label>
-                <input type="checkbox"
-                       name="is_active"
-                       checked>
+        <form action="{{ route('productlabels.store') }}" method="POST">
+            @csrf
 
-                Active
-            </label>
+            <div class="product-form-layout">
+                <div class="product-panel">
+                    <div class="form-field">
+                        <label class="input-label">Name <span class="required-mark">*</span></label>
+                        <input type="text" name="name" class="input-control" value="{{ old('name') }}" required>
+                        @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+                </div>
 
-        </div>
+                <div class="product-panel">
+                    <div class="form-field">
+                        <label class="input-label">Color</label>
+                        <input type="color" name="color" class="input-control" value="{{ old('color', '#2563eb') }}">
+                    </div>
 
-        <button type="submit" class="btn btn-success">
-            Save Label
-        </button>
+                    <div class="check-grid">
+                        <label class="check-pill">
+                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', 1) ? 'checked' : '' }}>
+                            Active
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-    </form>
-
+            <div class="form-actions">
+                <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> Save Label</button>
+                <a href="{{ route('productlabels.index') }}" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
 </div>
-
-
 @endsection

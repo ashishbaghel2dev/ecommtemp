@@ -15,7 +15,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductLabelController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Admin\AdminReviewController ;
-
+use App\Http\Controllers\Admin\UserController;
 
 /*
 |------------------------
@@ -95,6 +95,8 @@ Route::get('reviews/{review}', [ReviewController::class, 'show']);
 Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
 
     Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
     Route::get('/banners/create', [BannerController::class, 'create'])->name('banners.create');

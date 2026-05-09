@@ -6,28 +6,23 @@
 
 
 
-<div class="container">
+    <div class="main-content">
 
-    <div class="d-flex justify-content-between mb-3">
-        <h2>Product Labels</h2>
-
-        <a href="{{ route('productlabels.create') }}"
-           class="btn btn-primary">
-            Add Label
-        </a>
-    </div>
-
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
+              <div class="top-bar">
+            <h2 class="page-title">Product Labels</h2>
+            <p class="page-subtitle">Create and manage categories</p>
+            <a href="{{ route('productlabels.create') }}" class="btn-primary">
+                <i class="fas fa-plus"></i>      Add Label
+            </a>
         </div>
-    @endif
 
-    <table class="table table-bordered">
+
+   <div class="table-card">
+            <table class="custom-table">
 
         <thead>
             <tr>
-                <th>ID</th>
+                <th>Sr.No</th>
                 <th>Name</th>
                 <th>Slug</th>
                 <th>Color</th>
@@ -38,15 +33,17 @@
 
         <tbody>
 
-            @forelse($labels as $label)
+            @forelse($labels as $key => $label)
 
                 <tr>
 
-                    <td>{{ $label->id }}</td>
+                    <td>{{ $key + 1 }}</td>
+
+
 
                     <td>{{ $label->name }}</td>
 
-                    <td>{{ $label->slug }}</td>
+                    <td><span class="slug">{{ $label->slug }}</span></td>
 
                     <td>
                         <span style="
@@ -59,38 +56,26 @@
                         </span>
                     </td>
 
-                    <td>
-                        @if($label->is_active)
-                            <span class="badge bg-success">Active</span>
-                        @else
-                            <span class="badge bg-danger">Inactive</span>
-                        @endif
-                    </td>
-
-                    <td>
-
-                        <a href="{{ route('productlabels.edit', $label->id) }}"
-                           class="btn btn-sm btn-warning">
-                            Edit
-                        </a>
-
-                        <form action="{{ route('productlabels.destroy', $label->id) }}"
-                              method="POST"
-                              style="display:inline-block">
-
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Delete this label?')">
-                                Delete
-                            </button>
-
-                        </form>
-
-                    </td>
-
+                   <td>
+                                @if($label->is_active)
+                                    <span class="status-badge active">Active</span>
+                                @else
+                                    <span class="status-badge inactive">Inactive</span>
+                                @endif
+                            </td>
+                      <td class="action-cell">
+                                <a href="{{ route('productlabels.edit', $label->id) }}" class="btn-icon edit">
+                                  <i class="ti ti-pencil-minus"></i>
+                                </a>
+                                <form action="{{ route('productlabels.destroy', $label->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-icon delete" 
+                                            onclick="return confirm('Delete this category?')">
+                                      <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                 </tr>
 
             @empty
@@ -108,6 +93,9 @@
     </table>
 
     {{ $labels->links() }}
+   </div>
+    </div>
+    
 
 </div>
 

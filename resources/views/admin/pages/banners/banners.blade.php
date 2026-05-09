@@ -4,38 +4,78 @@
 
 @section('content')
 
+<div class="main-content">
+
+    <div class="top-bar">
+        <h2 class="page-title">Banner</h2>
+        <p class="page-subtitle">Create and manage Banner</p>
+        <a href="{{ route('banners.create') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> Add Banner
+        </a>
+    </div>
 
 
 
-<a href="{{ route('banners.create') }}">Add Banner</a>
-
-<table border="1">
+   <div class="table-card">
+        <table class="custom-table">
+               <thead>
     <tr>
         <th>Image</th>
+           <th>Position </th>
         <th>Link</th>
+                 <th>
+priority </th>
         <th>Status</th>
         <th>Action</th>
     </tr>
 
-    @foreach($banners as $banner)
+</thead>
+   <tbody>
+  @foreach($banners->sortBy('priority') as $banner)
     <tr>
         <td>
-            <img src="{{ asset('storage/'.$banner->image) }}" width="120">
+            <img src="{{ asset($banner->image) }}" width="360">
         </td>
+    <td>{{ $banner->position }}</td>
         <td>{{ $banner->link }}</td>
-        <td>{{ $banner->is_active ? 'Active' : 'Inactive' }}</td>
-        <td>
-  <a href="{{ route('banners.edit', $banner->id) }}">Edit</a> 
+           <td>{{ $banner->priority }}</td>
+       <td>
+        @if($banner->is_active)
+        <span class="status-badge active">
+            Active
+        </span>
+        @else
+        <span class="status-badge inactive">
+            Inactive
+        </span>
+        @endif
+    </td>
 
-            <form action="{{ route('banners.destroy', $banner->id) }}" method="POST">
-                @csrf
-                @method('DELETE')
-              <button onclick="return confirm('Delete this banner?')">Delete</button>
-            </form> 
-        </td>
+
+            <td >
+                <div class="product-image-box">
+<a href="{{ route('banners.edit', $banner->id) }}" class="btn-icon edit">
+                                  <i class="ti ti-pencil-minus"></i>
+                                </a>
+                                <form action="{{ route('banners.destroy', $banner->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-icon delete" 
+                                            onclick="return confirm('Delete this category?')">
+                                      <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                </div>
+                                
+                            </td>
+
     </tr>
+    
     @endforeach
+       <tbody>
 </table>
+
+</div>
 
 
 @endsection

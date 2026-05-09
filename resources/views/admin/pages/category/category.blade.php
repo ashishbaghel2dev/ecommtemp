@@ -1,163 +1,118 @@
-
 @extends('admin.layouts.app')
 
-@section('title', 'Home Page')
+@section('title', 'Categories')
 
 @section('content')
 
+    <div class="main-content">
 
-<div class="container-fluid">
+ 
+        <div class="top-bar">
+            <h2 class="page-title">Categories</h2>
+            <p class="page-subtitle">Create and manage categories</p>
+            <a href="{{ route('categories.create') }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Add Category
+            </a>
+        </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Categories</h4>
-        <a href="{{ route('categories.create') }}" class="btn btn-primary">
-            + Add Category
-        </a>
-    </div>
-@if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
+        @if(session('success'))
+            <div class="alert success">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="alert error">{{ session('error') }}</div>
+        @endif
 
-@if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-@endif
+        <div class="filter-card">
+            <form method="GET" class="filter-form">
+                <input type="text" name="search" class="input-field" 
+                       placeholder="Search category..." value="{{ request('search') }}">
 
-
-    {{-- 🔍 FILTER SECTION --}}
-    <form method="GET" class="card p-3 mb-3">
-        <div class="row">
-
-            {{-- Search --}}
-            <div class="col-md-4">
-                <input type="text" name="search" class="form-control"
-                    placeholder="Search category..."
-                    value="{{ request('search') }}">
-            </div>
-
-            {{-- Parent Filter --}}
-            <div class="col-md-3">
-                <select name="parent_id" class="form-control">
-                    <option value="">All Parent</option>
+                <select name="parent_id" class="input-field">
+                    <option value="">All Parent Categories</option>
                     @foreach(\App\Models\Category::whereNull('parent_id')->get() as $parent)
-                        <option value="{{ $parent->id }}"
-                            {{ request('parent_id') == $parent->id ? 'selected' : '' }}>
+                        <option value="{{ $parent->id }}" {{ request('parent_id') == $parent->id ? 'selected' : '' }}>
                             {{ $parent->name }}
                         </option>
                     @endforeach
                 </select>
-            </div>
 
-            {{-- Sort --}}
-            <div class="col-md-3">
-                <select name="sort_by" class="form-control">
+                <select name="sort_by" class="input-field">
                     <option value="">Default Sort</option>
                     <option value="name_asc" {{ request('sort_by') == 'name_asc' ? 'selected' : '' }}>Name A-Z</option>
                     <option value="name_desc" {{ request('sort_by') == 'name_desc' ? 'selected' : '' }}>Name Z-A</option>
                     <option value="latest" {{ request('sort_by') == 'latest' ? 'selected' : '' }}>Latest</option>
                     <option value="oldest" {{ request('sort_by') == 'oldest' ? 'selected' : '' }}>Oldest</option>
-                    <option value="order" {{ request('sort_by') == 'order' ? 'selected' : '' }}>Sort Order</option>
                 </select>
-            </div>
 
-            {{-- Button --}}
-            <div class="col-md-2">
-                <button class="btn btn-dark w-100">Filter</button>
-            </div>
-
+                <button type="submit" class="btn-filter">Filter</button>
+            </form>
         </div>
-    </form>
 
-    {{-- 📋 TABLE --}}
-    <div class="card">
-        <div class="card-body table-responsive">
-
-            <table class="table table-bordered table-hover">
-
+        <!-- Table Card -->
+        <div class="table-card">
+            <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>#</th>
-                             <th>Image</th>
+                        <th>Sr.No</th>
+                        <th>Image</th>
                         <th>Name</th>
+                        <th>Description</th>
                         <th>Parent</th>
                         <th>Slug</th>
                         <th>Sort Order</th>
                         <th>Status</th>
-                        <th width="150">Action</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
-                
                 <tbody>
                     @forelse($categories as $key => $category)
                         <tr>
                             <td>{{ $key + 1 }}</td>
                             <td>
                                 @if($category->image)
-                                    <img src="{{ asset($category->image) }}" alt="{{ $category->name }}" class="img-thumbnail" width="50">
+                                    <img src="{{ asset($category->image) }}" alt="{{ $category->name }}" class="table-img">
                                 @else
-                                    <span class="text-muted">No Image</span>
+                                    <span class="no-image">No Image</span>
                                 @endif
                             </td>
-                            <td>{{ $category->name }}</td>
-
-                            {{-- Parent --}}
-                            <td>
-                                {{ $category->parent->name ?? '-' }}
-                            </td>
-
-                            <td>{{ $category->slug }}</td>
-
+                            <td class="fw-medium">{{ $category->name }}</td>
+                            <td class="text-muted">{{ Str::limit($category->description ?? '', 50) }}</td>
+                            <td>{{ $category->parent->name ?? '-' }}</td>
+                            <td><span class="slug">{{ $category->slug }}</span></td>
                             <td>{{ $category->sort_order ?? 0 }}</td>
-
-                            {{-- Status --}}
                             <td>
                                 @if($category->is_active)
-                                    <span class="badge bg-success">Active</span>
+                                    <span class="status-badge active">Active</span>
                                 @else
-                                    <span class="badge bg-danger">Inactive</span>
+                                    <span class="status-badge inactive">Inactive</span>
                                 @endif
                             </td>
-
-                            {{-- Actions --}}
-                            <td>
-                                <a href="{{ route('categories.edit', $category->id) }}"
-                                   class="btn btn-sm btn-primary">
-                                    Edit
+                            <td class="action-cell">
+                                <a href="{{ route('categories.edit', $category->id) }}" class="btn-icon edit">
+                                  <i class="ti ti-pencil-minus"></i>
                                 </a>
-
-                                <form action="{{ route('categories.destroy', $category->id) }}"
-                                      method="POST"
-                                      style="display:inline-block;">
+                                <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-
-                                    <button type="submit"
-                                            class="btn btn-sm btn-danger"
+                                    <button type="submit" class="btn-icon delete" 
                                             onclick="return confirm('Delete this category?')">
-                                        Delete
+                                      <i class="ti ti-trash"></i>
                                     </button>
                                 </form>
                             </td>
-
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center">
-                                No categories found
-                            </td>
+                            <td colspan="9" class="text-center py-5">No categories found</td>
                         </tr>
                     @endforelse
                 </tbody>
-
             </table>
-
         </div>
+
     </div>
 
-</div>
+
 
 
 @endsection

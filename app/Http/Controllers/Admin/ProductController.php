@@ -66,6 +66,8 @@ public function create()
             'sale_price' => 'nullable|numeric',
             'stock' => 'nullable|integer|min:0',
             'image' => 'nullable|image|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:2048',
             'labels' => 'nullable|array',
             'labels.*' => 'exists:product_labels,id',
             'attributes' => 'nullable|array',
@@ -83,7 +85,8 @@ public function create()
         try {
 
             // 1. CREATE PRODUCT
-            $imagePath = $this->storeImage($request);
+            $imagePaths = $this->storeImages($request);
+            $imagePath = $imagePaths[0] ?? $this->storeImage($request);
 
             $product = Product::create([
                 'category_id' => $request->category_id,
@@ -108,12 +111,12 @@ public function create()
                 'type' => $request->type ?? 'simple',
             ]);
 
-            if ($imagePath) {
+            foreach ($imagePaths ?: array_filter([$imagePath]) as $index => $path) {
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image' => $imagePath,
-                    'is_main' => true,
-                    'sort_order' => 0,
+                    'image' => $path,
+                    'is_main' => $index === 0,
+                    'sort_order' => $index,
                 ]);
             }
 
@@ -196,6 +199,8 @@ public function create()
             'sale_price' => 'nullable|numeric',
             'stock' => 'nullable|integer|min:0',
             'image' => 'nullable|image|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:2048',
             'labels' => 'nullable|array',
             'labels.*' => 'exists:product_labels,id',
             'attributes' => 'nullable|array',
@@ -219,9 +224,10 @@ public function create()
 
         try {
 
-            $imagePath = $this->storeImage($request);
+            $imagePaths = $this->storeImages($request);
+            $imagePath = $imagePaths[0] ?? $this->storeImage($request);
 
-            if ($imagePath && $product->image) {
+            if ($imagePath && ! $imagePaths && $product->image) {
                 File::delete(public_path($product->image));
             }
 
@@ -248,13 +254,24 @@ public function create()
                 'type' => $request->type ?? 'simple',
             ]);
 
-            if ($imagePath) {
-                $product->images()->delete();
+            if ($imagePaths) {
+                $sortOrder = (int) $product->images()->max('sort_order') + 1;
+                $product->images()->update(['is_main' => false]);
+
+                foreach ($imagePaths as $index => $path) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image' => $path,
+                        'is_main' => $index === 0,
+                        'sort_order' => $sortOrder + $index,
+                    ]);
+                }
+            } elseif ($imagePath) {
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image' => $imagePath,
-                    'is_main' => true,
-                    'sort_order' => 0,
+                    'is_main' => ! $product->images()->exists(),
+                    'sort_order' => (int) $product->images()->max('sort_order') + 1,
                 ]);
             }
 
@@ -438,6 +455,33 @@ public function create()
         $file->move($directory, $fileName);
 
         return 'products/images/' . $fileName;
+    }
+
+    private function storeImages(Request $request)
+    {
+        if (! $request->hasFile('images')) {
+            return [];
+        }
+
+        $directory = public_path('products/images');
+
+        if (! File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $paths = [];
+
+        foreach ($request->file('images', []) as $file) {
+            if (! $file || ! $file->isValid()) {
+                continue;
+            }
+
+            $fileName = time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $file->move($directory, $fileName);
+            $paths[] = 'products/images/' . $fileName;
+        }
+
+        return $paths;
     }
 
     private function uniqueSlug($name, $ignoreId = null)

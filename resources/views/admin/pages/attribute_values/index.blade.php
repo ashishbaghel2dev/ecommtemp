@@ -5,24 +5,30 @@
 @section('content')
 
 
-<div class="container-fluid">
+    <div class="main-content">
 
-    <div class="d-flex justify-content-between mb-3">
-        <h4>Attribute Values</h4>
-        <a href="{{ route('attribute-values.create') }}" class="btn btn-primary">+ Add Value</a>
-    </div>
+        <div class="top-bar">
+            <h2 class="page-title">Attribute Values</h2>
+            <p class="page-subtitle">Create and manage attributes values</p>
+            <a href="{{ route('attribute-values.create') }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Add Attribute Values
+            </a>
+        </div>
+ 
 
-    <table class="table table-bordered">
+   
+  <div class="table-card">
+          <table class="custom-table">
 
         <thead>
             <tr>
-                <th>#</th>
+                <th>Sr.No</th>
                 <th>Attribute</th>
                 <th>Value</th>
                 <th>Slug</th>
                 <th>Color</th>
                 <th>Status</th>
-                <th>Action</th>
+                <th class="text-end">Action</th>
             </tr>
         </thead>
 
@@ -30,29 +36,48 @@
             @foreach($values as $val)
                 <tr>
                     <td>{{ $val->id }}</td>
-                    <td>{{ $val->attribute->name ?? '-' }}</td>
+                   <td class="fw-medium">{{ $val->attribute->name ?? '-' }}</td>
                     <td>{{ $val->value }}</td>
-                    <td>{{ $val->slug }}</td>
+                    <td> <span class="slug">{{ $val->slug }} </span></td>
                     <td>
                         @if($val->color_code)
-                            <span style="display:inline-block;width:20px;height:20px;background:{{ $val->color_code }}"></span>
+<span class="slug">{{ $val->color_code }}</span>
+     @else
+                         <span class="slug">-</span>
                         @endif
+     
+                       
                     </td>
-                    <td>{{ $val->is_active ? 'Active' : 'Inactive' }}</td>
-                    <td>
-                        <a href="{{ route('attribute-values.edit', $val->id) }}" class="btn btn-sm btn-info">Edit</a>
+                 <td>
+                                @if($val->is_active)
+                                    <span class="status-badge active">Active</span>
+                                @else
+                                    <span class="status-badge inactive">Inactive</span>
+                                @endif
+                            </td>
 
-                        <form action="{{ route('attribute-values.destroy', $val->id) }}" method="POST" style="display:inline-block">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
+                               <td class="action-cell">
+                                <a href="{{ route('attribute-values.edit', $val->id) }}" class="btn-icon edit">
+                                  <i class="ti ti-pencil-minus"></i>
+                                </a>
+                                <form action="{{ route('attribute-values.destroy', $val->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-icon delete" 
+                                            onclick="return confirm('Delete this category?')">
+                                      <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+
+                    
                 </tr>
             @endforeach
         </tbody>
 
     </table>
+  </div>
+    </div>
 
 </div>
 @endsection

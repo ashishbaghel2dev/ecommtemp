@@ -1,59 +1,87 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Home Page')
+@section('title', 'Attributes')
 
 @section('content')
+    <div class="main-content">
 
+        <div class="top-bar">
+            <h2 class="page-title">Attributes</h2>
+            <p class="page-subtitle">Create and manage attributes</p>
+            <a href="{{ route('attributes.create') }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Add Attribute
+            </a>
+        </div>
+ 
 
-<div class="container-fluid">
-
-    <div class="d-flex justify-content-between mb-3">
-        <h4>Attributes</h4>
-        <a href="{{ route('attributes.create') }}" class="btn btn-primary">+ Add Attribute</a>
+  <div class="table-card">
+          <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Filterable</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($attributes as $attr)
+                        <tr>
+                            <td class="text-muted">{{ $attr->id }}</td>
+                            <td class="fw-bold text-dark">{{ $attr->name }}</td>
+                            <td><span class="slug">{{ $attr->code }}</span></td>
+                            <td><span class="text-muted">{{ $attr->category->name ?? '-' }}</span></td>
+                            <td><span class="badge bg-light text-dark border">{{ ucfirst($attr->type) }}</span></td>
+                            <td>
+                                @if($attr->is_required)
+                                    <span class="status-yes">Yes</span>
+                                @else
+                                    <span class="status-no">No</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($attr->is_filterable)
+                                   <span class="status-yes">Yes</span>
+                                @else
+                                    <span class="status-no">No</span>
+                                @endif
+                            </td>
+                          
+                            <td>
+                                @if($attr->is_active)
+                                    <span class="status-badge active ">Active</span>
+                                @else
+                                    <span class="status-badge inactive   ">Inactive</span>
+                                @endif
+                            </td>
+                            <td class="action-cell">
+                                 <a href="{{ route('attributes.edit', $attr->id) }}" class="btn-icon edit">
+                                  <i class="ti ti-pencil-minus"></i>
+                                </a>
+                                <form action="{{ route('attributes.destroy', $attr->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-icon delete" 
+                                            onclick="return confirm('Delete this category?')">
+                                      <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <table class="table table-bordered">
-
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Code</th>
-                <th>Category</th>
-                <th>Type</th>
-                <th>Required</th>
-                <th>Filterable</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach($attributes as $attr)
-                <tr>
-                    <td>{{ $attr->id }}</td>
-                    <td>{{ $attr->name }}</td>
-                    <td>{{ $attr->code }}</td>
-                    <td>{{ $attr->category->name ?? '-' }}</td>
-                    <td>{{ $attr->type }}</td>
-                    <td>{{ $attr->is_required ? 'Yes' : 'No' }}</td>
-                    <td>{{ $attr->is_filterable ? 'Yes' : 'No' }}</td>
-                    <td>{{ $attr->is_active ? 'Active' : 'Inactive' }}</td>
-                    <td>
-                        <a href="{{ route('attributes.edit', $attr->id) }}" class="btn btn-sm btn-info">Edit</a>
-
-                        <form action="{{ route('attributes.destroy', $attr->id) }}" method="POST" style="display:inline-block">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-
-    </table>
-
 </div>
+
+
+   
+  
 
 @endsection

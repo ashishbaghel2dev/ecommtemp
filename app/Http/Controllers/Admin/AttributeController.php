@@ -34,6 +34,8 @@ class AttributeController
         return view('admin.pages.attributes.create', compact('categories'));
     }
 
+    
+
     // 💾 STORE
     public function store(Request $request)
     {
