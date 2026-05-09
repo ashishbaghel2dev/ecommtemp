@@ -1,0 +1,14 @@
+:root{
+
+  --bg-white: #ffffff;
+  --bg-light: #f1f5f9;
+  --bg-dark: #111827;
+  --bg-primary: #00226D;
+  --bg-primary-light: #d8e5ff;
+   --text-dark: #111827;
+  --text-muted: #6b7280;
+  --line-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;;
+  --standard-border-radius: 5px;
+  --line-color: #f4f4f5;
+  
+}

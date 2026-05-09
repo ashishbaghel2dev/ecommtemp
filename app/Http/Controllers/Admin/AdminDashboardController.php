@@ -8,6 +8,6 @@ class AdminDashboardController
 {
     public function index()
     {
-        return view('admin.home');
+        return view('admin.pages.home.home');
     }
 }

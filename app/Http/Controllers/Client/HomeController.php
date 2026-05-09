@@ -7,6 +7,7 @@ use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Product;
 use App\Models\Review;
+use App\Models\Banner;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
@@ -97,6 +98,19 @@ class HomeController extends Controller
             ->take(10)
             ->get();
 
+
+     /*
+        |--------------------------------------------------------------------------
+        | Approved banners        
+        |--------------------------------------------------------------------------
+        */
+
+              $homeSliders = Banner::where('is_active', 1)
+            ->where('position', 'home_slider')
+            ->orderBy('priority', 'asc')
+            ->get();
+
+
         /*
         |--------------------------------------------------------------------------
         | Return View
@@ -107,7 +121,8 @@ class HomeController extends Controller
             'products',
             'variantAttributes',
             'variantValues',
-            'reviews'
+            'reviews',
+            'homeSliders'
         ));
     }
 }
