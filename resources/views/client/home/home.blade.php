@@ -4,7 +4,19 @@
 
 @section('content')
 
+<style>
+    .container{
+        width: 90%;
+        margin: 40px auto;
+    }
 
-@include('client.home.components.hero')
-   
+</style>
+
+
+
+<div class="container">
+
+ @include('client.pages.products.products')
+</div>
+
 @endsection
