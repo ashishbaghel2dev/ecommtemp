@@ -14,10 +14,10 @@
 <div class="main-content product-form-page">
     <div class="product-form-hero">
         <div class="product-form-heading">
-            <span class="product-form-step">5</span>
+            <span class="product-form-step" title="Catalog setup flow">3</span>
             <div>
                 <h2 class="page-title">{{ $product ? 'Edit Product' : 'Add Product' }}</h2>
-                <p class="page-subtitle">Add new product using attributes and values</p>
+                <p class="page-subtitle">Dashboard flow: basics → options shoppers see → variant SKUs &amp; prices (for configurable items like AC)</p>
             </div>
         </div>
 
@@ -43,6 +43,40 @@
     <section class="product-form-shell">
         <h3>{{ $product ? 'Edit Product' : 'Add Product' }}</h3>
 
+        <ol class="product-flow-steps" aria-label="Product creation steps">
+            <li class="flow-step is-active" data-flow-step="1">
+                <span class="flow-step-num">1</span>
+                <span class="flow-step-body">
+                    <strong>Basics</strong>
+                    <small>Name (e.g. LG 1.5 Ton Split AC), category, type, base price, images</small>
+                </span>
+            </li>
+            <li class="flow-step" data-flow-step="2">
+                <span class="flow-step-num">2</span>
+                <span class="flow-step-body">
+                    <strong>Store options</strong>
+                    <small>Tick values customers choose on the storefront (tonnage, star rating, type). These become <code>product_attribute_values</code>.</small>
+                </span>
+            </li>
+            <li class="flow-step" data-flow-step="3">
+                <span class="flow-step-num">3</span>
+                <span class="flow-step-body">
+                    <strong>Variants</strong>
+                    <small>Only if type is <em>Configurable</em>: one row per sellable combo; <code>attributes</code> JSON must match those options so cart can resolve price &amp; SKU.</small>
+                </span>
+            </li>
+        </ol>
+
+        <details class="flow-example-panel">
+            <summary>Example: adding “Wall AC” under Electronics → Air Conditioners</summary>
+            <ol>
+                <li>Create category attributes first (Attributes / Attribute values): e.g. <strong>Capacity</strong> (1 Ton, 1.5 Ton), <strong>Energy rating</strong> (3 Star, 5 Star), <strong>Type</strong> (Split, Window).</li>
+                <li><strong>Step 1:</strong> Product name <code>Wall AC</code>, pick category, set type to <strong>Configurable</strong>, enter a base price and upload images.</li>
+                <li><strong>Step 2:</strong> Under “Product attributes”, tick every value this product is sold in (all capacities and ratings you want visible).</li>
+                <li><strong>Step 3:</strong> Use <strong>Generate all combinations</strong> or <strong>Add variant</strong> manually. Each row needs unique SKU, price, stock, and one value per column so it matches what shoppers pick.</li>
+            </ol>
+        </details>
+
         <form action="{{ $action }}" method="POST" enctype="multipart/form-data">
             @csrf
 
@@ -57,7 +91,7 @@
                             Product Name <span class="required-mark">*</span>
                             <span class="tooltip-hint" tabindex="0" data-tooltip="Use the customer-facing product name.">?</span>
                         </label>
-                        <input type="text" name="name" class="input-control" value="{{ old('name', $product->name ?? '') }}" required>
+                        <input type="text" name="name" id="product_name_input" class="input-control" value="{{ old('name', $product->name ?? '') }}" required>
                         @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
@@ -169,8 +203,9 @@
                 </div>
 
                 <div class="product-panel">
-                    <div class="section-box">
-                        <h4>Product Attributes</h4>
+                    <div class="section-box" id="step-store-options">
+                        <h4>Product attributes — options on the store</h4>
+                        <p class="flow-hint">These checkboxes control what buyers can select for this product. They are saved to <code>product_attribute_values</code> and must line up with each variant row below (same attribute / value IDs).</p>
                         <div id="attribute_fields" class="attribute-grid"></div>
                         <p id="attribute_empty" class="attribute-empty">Select a category to load attributes.</p>
                     </div>
@@ -251,10 +286,18 @@
 
             <div class="section-box" id="variant_section" style="margin-top: 22px;">
                 <div class="variant-head">
-                    <h4>Variant Pricing</h4>
-                    <button type="button" class="btn-outline" id="add_variant_btn">
-                        <i class="ti ti-plus"></i> Add Variant
-                    </button>
+                    <div>
+                        <h4>Variants — SKUs &amp; prices (configurable only)</h4>
+                        <p class="flow-hint flow-hint-tight">Each combination of dropdowns must exist as exactly one row. Use generate to build all combos from your Step 2 selections, then fill price and stock.</p>
+                    </div>
+                    <div class="variant-actions">
+                        <button type="button" class="btn-outline btn-generate" id="generate_variants_btn" title="Build one row per combination of ticked attribute values">
+                            <i class="ti ti-wand"></i> Generate all combinations
+                        </button>
+                        <button type="button" class="btn-outline" id="add_variant_btn">
+                            <i class="ti ti-plus"></i> Add variant
+                        </button>
+                    </div>
                 </div>
 
                 <div class="variant-table-wrap">

@@ -1,229 +1,232 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Cart Page</title>
-
-
-<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <title>Cart</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
-
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             background: #f5f5f5;
         }
 
         .container {
             width: 80%;
+            max-width: 960px;
             margin: 30px auto;
         }
 
         .cart-item {
-            background: white;
-            padding: 15px;
-            margin-bottom: 10px;
+            background: #fff;
+            padding: 16px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
             border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .cart-item-main {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .cart-line-attrs {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .cart-line-attrs span {
+            display: inline-block;
+            margin-right: 12px;
         }
 
         .qty-box button {
             padding: 5px 10px;
+            cursor: pointer;
         }
 
         .summary {
-            background: white;
-            padding: 15px;
+            background: #fff;
+            padding: 16px;
             margin-top: 20px;
             border-radius: 8px;
+            border: 1px solid #eee;
         }
 
         .btn {
             padding: 8px 15px;
             border: none;
             cursor: pointer;
+            border-radius: 6px;
         }
 
-        .btn-danger { background: red; color: white; }
-        .btn-primary { background: blue; color: white; }
-        .btn-success { background: green; color: white; }
+        .btn-danger {
+            background: #c0392b;
+            color: #fff;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+        }
     </style>
 </head>
-
 <body>
 
 <div class="container">
 
-    <h2>Your Cart</h2>
+    <h2>Your cart</h2>
 
     <div id="cart-wrapper">
 
-        @foreach($cart->items as $item)
+        @forelse($cart->items as $item)
 
-        <div class="cart-item" id="item-{{ $item->id }}">
+            <div class="cart-item" id="item-{{ $item->id }}">
 
-            <div>
-                <h4>{{ $item->product_name }}</h4>
-                @if($item->product_variant_id && $item->variant)
-                    <div style="font-size: 13px; color: #666; margin-top: 5px;">
-                        @php
-                            $variantDetails = [];
-                            // Construct readable variant description from stored attributes JSON
-                            if (is_array($item->variant->attributes)) {
-                                foreach ($item->variant->attributes as $attrId => $valId) {
-                                    // In a production app, eager load these to avoid N+1 queries
-                                    $attr = \App\Models\Attribute::find($attrId);
-                                    $val = \App\Models\AttributeValue::find($valId);
-                                    if ($attr && $val) {
-                                        $variantDetails[] = "{$attr->name}: {$val->value}";
+                <div class="cart-item-main">
+                    <h4>{{ $item->product_name }}</h4>
+
+                    @if(!empty($item->meta['product_attribute_values']))
+                        <div class="cart-line-attrs">
+                            @foreach($item->meta['product_attribute_values'] as $row)
+                                <span>
+                                    {{ $row['attribute_name'] ?? 'Option' }}:
+                                    {{ $row['attribute_value_label'] ?? $row['value'] ?? '—' }}
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if($item->product_variant_id && $item->variant)
+                        <div style="font-size: 13px; color: #666; margin-top: 6px;">
+                            @php
+                                $variantDetails = [];
+                                if (is_array($item->variant->attributes)) {
+                                    foreach ($item->variant->attributes as $attrId => $valId) {
+                                        $attr = \App\Models\Attribute::find($attrId);
+                                        $val = \App\Models\AttributeValue::find($valId);
+                                        if ($attr && $val) {
+                                            $variantDetails[] = "{$attr->name}: {$val->value}";
+                                        }
                                     }
                                 }
-                            }
-                        @endphp
-                        <strong>Variant:</strong> {{ implode(', ', $variantDetails) ?: $item->product_sku }}
-                    </div>
-                @endif
+                            @endphp
+                            <strong>Variant:</strong> {{ implode(', ', $variantDetails) ?: $item->product_sku }}
+                        </div>
+                    @endif
 
-                <p>Price: ₹{{ $item->price }}</p>
+                    <p style="margin-top: 8px;">Price: ₹{{ number_format($item->price, 2) }}</p>
+                </div>
+
+                <div class="qty-box">
+                    <button type="button" onclick="decrement({{ $item->id }})">−</button>
+                    <span id="qty-{{ $item->id }}">{{ $item->quantity }}</span>
+                    <button type="button" onclick="increment({{ $item->id }})">+</button>
+                </div>
+
+                <div>
+                    <p>₹<span id="subtotal-{{ $item->id }}">{{ number_format($item->subtotal, 2) }}</span></p>
+                </div>
+
+                <div>
+                    <button type="button" class="btn btn-danger" onclick="removeItem({{ $item->id }})">Remove</button>
+                </div>
+
             </div>
 
-            <div class="qty-box">
-                <button onclick="decrement({{ $item->id }})">-</button>
+        @empty
 
-                <span id="qty-{{ $item->id }}">{{ $item->quantity }}</span>
+            <p>Your cart is empty.</p>
 
-                <button onclick="increment({{ $item->id }})">+</button>
-            </div>
-
-            <div>
-                <p>₹<span id="subtotal-{{ $item->id }}">{{ $item->subtotal }}</span></p>
-            </div>
-
-            <div>
-                <button class="btn btn-danger" onclick="removeItem({{ $item->id }})">
-                    Remove
-                </button>
-
-                <!-- POST fallback button -->
-                <form action="/cart/remove/{{ $item->id }}" method="POST" style="display:inline;">
-                    @csrf
-                    <button class="btn btn-danger">POST Remove</button>
-                </form>
-            </div>
-
-        </div>
-
-        @endforeach
+        @endforelse
 
     </div>
 
     <div class="summary">
 
-        <h3>Total: ₹<span id="cart-total">{{ $cart->subtotal }}</span></h3>
+        <h3>Total: ₹<span id="cart-total">{{ number_format($cart->subtotal, 2) }}</span></h3>
 
-        <button class="btn btn-danger" onclick="clearCart()">Clear Cart</button>
-
-        <!-- POST fallback -->
-        <form action="/cart/clear" method="POST" style="display:inline;">
-            @csrf
-            <button class="btn btn-danger">POST Clear</button>
-        </form>
-
-        <button class="btn btn-success">Checkout</button>
+        <button type="button" class="btn btn-danger" onclick="clearCart()">Clear cart</button>
+        <button type="button" class="btn btn-success">Checkout</button>
 
     </div>
 
 </div>
 
 <script>
-axios.defaults.headers.common['X-CSRF-TOKEN'] =
-    document.querySelector('meta[name="csrf-token"]').content;
+    axios.defaults.headers.common['X-CSRF-TOKEN'] =
+        document.querySelector('meta[name="csrf-token"]').content;
 
-/*
-|--------------------------------------------------------------------------
-| INCREMENT
-|--------------------------------------------------------------------------
-*/
-function increment(itemId) {
-    axios.post('/cart/increment/' + itemId)
-        .then(res => {
-            if (res.data.status) {
-                const item = res.data.item;
-                document.getElementById('qty-' + itemId).innerText = item.quantity;
-                document.getElementById('subtotal-' + itemId).innerText = item.subtotal;
-                document.getElementById('cart-total').innerText = res.data.cart.grand_total;
-            } else {
-                alert(res.data.message);
-            }
-        })
-        .catch(err => console.error(err));
-}
-
-/*
-|--------------------------------------------------------------------------
-| DECREMENT
-|--------------------------------------------------------------------------
- */
-function decrement(itemId) {
-    axios.post('/cart/decrement/' + itemId)
-        .then(res => {
-            if (res.data.status) {
-                const item = res.data.item;
-                if (item) { // Item still exists
+    function increment(itemId) {
+        axios.post('/cart/increment/' + itemId)
+            .then((res) => {
+                if (res.data.status) {
+                    const item = res.data.item;
                     document.getElementById('qty-' + itemId).innerText = item.quantity;
-                    document.getElementById('subtotal-' + itemId).innerText = item.subtotal;
-                } else { // Item was removed (quantity went to 0)
-                    document.getElementById('item-' + itemId).remove();
+                    document.getElementById('subtotal-' + itemId).innerText = Number(item.subtotal).toFixed(2);
+                    document.getElementById('cart-total').innerText = Number(res.data.cart.grand_total).toFixed(2);
+                } else {
+                    alert(res.data.message || 'Could not update');
                 }
-                document.getElementById('cart-total').innerText = res.data.cart.grand_total;
-            } else {
-                alert(res.data.message);
-            }
-        })
-        .catch(err => console.error(err));
-}
-/*
-|--------------------------------------------------------------------------
-| REMOVE ITEM
-|--------------------------------------------------------------------------
-*/
-function removeItem(id) {
-    axios.delete('/cart/remove/' + id)
-        .then(res => {
-            if (res.data.status) {
-                document.getElementById('item-' + id).remove();
-                document.getElementById('cart-total').innerText = res.data.cart.grand_total;
-            } else {
-                alert(res.data.message);
-            }
-        });
-}
+            })
+            .catch((err) => console.error(err));
+    }
 
-/*
-|--------------------------------------------------------------------------
-| CLEAR CART
-|--------------------------------------------------------------------------
-*/
-function clearCart() {
-    axios.delete('/cart/clear')
-        .then(res => {
-            if (res.data.status) {
-                document.getElementById('cart-wrapper').innerHTML = '<p>Your cart is empty.</p>';
-                document.getElementById('cart-total').innerText = 0;
-            } else {
-                alert(res.data.message);
-            }
-        });
-}
-/*
- |--------------------------------------------------------------------------
- | UPDATE TOTAL (simple UI sync) - No longer needed as updates are dynamic
- |--------------------------------------------------------------------------
- */
+    function decrement(itemId) {
+        axios.post('/cart/decrement/' + itemId)
+            .then((res) => {
+                if (!res.data.status) {
+                    alert(res.data.message || 'Could not update');
+                    return;
+                }
+                const item = res.data.item;
+                if (item) {
+                    document.getElementById('qty-' + itemId).innerText = item.quantity;
+                    document.getElementById('subtotal-' + itemId).innerText = Number(item.subtotal).toFixed(2);
+                } else {
+                    const row = document.getElementById('item-' + itemId);
+                    if (row) {
+                        row.remove();
+                    }
+                }
+                document.getElementById('cart-total').innerText = Number(res.data.cart.grand_total).toFixed(2);
+            })
+            .catch((err) => console.error(err));
+    }
+
+    function removeItem(id) {
+        axios.delete('/cart/remove/' + id)
+            .then((res) => {
+                if (res.data.status) {
+                    const row = document.getElementById('item-' + id);
+                    if (row) {
+                        row.remove();
+                    }
+                    document.getElementById('cart-total').innerText = Number(res.data.cart.grand_total).toFixed(2);
+                } else {
+                    alert(res.data.message || 'Remove failed');
+                }
+            });
+    }
+
+    function clearCart() {
+        axios.delete('/cart/clear')
+            .then((res) => {
+                if (res.data.status) {
+                    document.getElementById('cart-wrapper').innerHTML = '<p>Your cart is empty.</p>';
+                    document.getElementById('cart-total').innerText = '0.00';
+                } else {
+                    alert(res.data.message || 'Clear failed');
+                }
+            });
+    }
 </script>
 
 </body>

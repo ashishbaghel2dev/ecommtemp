@@ -6,7 +6,28 @@
 
         @foreach($products as $product)
 
-            <div class="product-card" data-id="{{ $product->id }}">
+            @php
+                $pricingPayload = [
+                    'baseFinal' => (float) $product->final_price,
+                    'baseList' => (float) ($product->price ?? 0),
+                    'variants' => [],
+                ];
+                if ($product->type === 'configurable' && $product->variants->isNotEmpty()) {
+                    $pricingPayload['variants'] = $product->variants->map(function ($v) {
+                        return [
+                            'id' => $v->id,
+                            'price' => (float) $v->getFinalPriceAttribute(),
+                            'attributes' => is_array($v->attributes) ? $v->attributes : [],
+                        ];
+                    })->values()->all();
+                }
+                $strikeList = max(
+                    (float) ($product->price ?? 0),
+                    (float) $product->final_price * 1.08
+                );
+            @endphp
+
+            <div class="product-card" data-id="{{ $product->id }}" data-pricing='@json($pricingPayload)'>
 
                 <!-- CATEGORY BADGE -->
                 <div class="product-badge">
@@ -39,10 +60,14 @@
 
                     <!-- ATTRIBUTES -->
                     <div class="attributes">
-                        @if($product->type === 'configurable' && $product->variants->count() > 0)
+                        @php
+                            $groupedAttributes = $product->attributeValues->groupBy('attribute_id');
+                        @endphp
+
+                        @if($product->type === 'configurable' && $product->variants->count() > 0 && $groupedAttributes->isEmpty())
                             <div class="attribute-item">
                                 <span class="label">Variant</span>
-                                <select class="value product-variant-select" id="variant-select-{{ $product->id }}" onchange="updateProductPrice({{ $product->id }}, this)">
+                                <select class="value product-variant-select" id="variant-select-{{ $product->id }}" onchange="updateProductPrice({{ $product->id }})">
                                     @foreach($product->variants as $variant)
                                         @php
                                             $variantName = [];
@@ -65,19 +90,18 @@
                             </div>
                         @endif
 
-                        @php
-                            $groupedAttributes = $product->attributeValues->groupBy('attribute_id');
-                        @endphp
-
                         @foreach($groupedAttributes as $attrId => $pavs)
                             <div class="attribute-selection" data-attribute-id="{{ $attrId }}">
-                                <p class="label" style="margin-bottom: 5px; font-weight: 600;">{{ $pavs->first()->attribute->name }}:</p>
+                                <p class="label" style="margin-bottom: 5px; font-weight: 600;">{{ $pavs->first()->attribute->name ?? 'Option' }}:</p>
                                 <div class="options-group" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
                                     @foreach($pavs as $pav)
                                         <label class="option-item">
-                                            <input type="checkbox" 
-                                                   value="{{ $pav->attribute_value_id }}"
-                                                   class="attr-checkbox"
+                                            <input type="checkbox"
+                                                   name="pav-{{ $product->id }}-{{ $attrId }}"
+                                                   value="{{ $pav->id }}"
+                                                   class="attr-pav-checkbox"
+                                                   data-attribute-id="{{ $pav->attribute_id }}"
+                                                   data-attribute-value-id="{{ $pav->attribute_value_id }}"
                                                    style="display: none;">
                                             <span class="option-label">{{ $pav->attributeValue ? $pav->attributeValue->value : ($pav->value ?? '-') }}</span>
                                         </label>
@@ -99,12 +123,12 @@
                     <div class="price-area">
 
                         <div>
-                            <span class="old-price">
-                                ₹{{ number_format($product->price + 500, 2) }}
+                            <span class="old-price js-old-price">
+                                ₹{{ number_format($strikeList, 2) }}
                             </span>
 
-                            <div class="product-price">
-                                ₹{{ number_format($product->price, 2) }}
+                            <div class="product-price js-product-price">
+                                ₹{{ number_format($product->final_price, 2) }}
                             </div>
                         </div>
 
@@ -409,70 +433,192 @@
 
 <script>
     document.querySelectorAll('.add-to-cart').forEach(btn => {
-    btn.addEventListener('click', function () {
-        addToCart(this.dataset.id);
+        btn.addEventListener('click', function () {
+            addToCart(this.dataset.id);
+        });
     });
-});
 
-
-function handleAddToCart(productId) {
-    const productCard = document.querySelector(`.product-card[data-id="${productId}"]`);
-    const variantSelect = document.getElementById('variant-select-' + productId);
-    
-    let variantId = variantSelect ? variantSelect.value : null;
-    let selectedAttributes = {};
-    
-    const attributeGroups = productCard.querySelectorAll('.attribute-selection');
-    attributeGroups.forEach(group => {
-        const attrId = group.dataset.attributeId;
-        const checked = Array.from(group.querySelectorAll('input[type="checkbox"]:checked')).map(el => el.value);
-        if (checked.length > 0) {
-            // Send as single value if only one selected, or array if multiple
-            selectedAttributes[attrId] = checked.length === 1 ? checked[0] : checked;
+    document.addEventListener('change', function (e) {
+        if (!e.target.classList.contains('attr-pav-checkbox')) {
+            return;
+        }
+        const card = e.target.closest('.product-card');
+        if (!card) {
+            return;
+        }
+        const group = e.target.closest('.attribute-selection');
+        if (group && e.target.checked) {
+            group.querySelectorAll('.attr-pav-checkbox').forEach((cb) => {
+                if (cb !== e.target) {
+                    cb.checked = false;
+                }
+            });
+        }
+        const productId = parseInt(card.getAttribute('data-id'), 10);
+        if (Number.isFinite(productId)) {
+            updatePriceForProductCard(productId);
         }
     });
 
-    addToCart(productId, variantId, selectedAttributes);
-}
+    function readPricing(card) {
+        const raw = card.getAttribute('data-pricing');
+        if (!raw) {
+            return { baseFinal: 0, baseList: 0, variants: [] };
+        }
+        try {
+            return JSON.parse(raw);
+        } catch (err) {
+            return { baseFinal: 0, baseList: 0, variants: [] };
+        }
+    }
 
-function addToCart(productId, variantId = null, selectedAttributes = null) {
-    fetch('/cart/add', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
+    function formatInr(n) {
+        return '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function normAttrMap(map) {
+        const o = {};
+        if (!map || typeof map !== 'object') {
+            return '{}';
+        }
+        Object.keys(map).forEach((k) => {
+            const kk = parseInt(String(k), 10);
+            const vv = parseInt(String(map[k]), 10);
+            if (Number.isFinite(kk) && Number.isFinite(vv)) {
+                o[kk] = vv;
+            }
+        });
+        const keys = Object.keys(o)
+            .map((x) => parseInt(x, 10))
+            .sort((a, b) => a - b);
+        const sorted = {};
+        keys.forEach((k) => {
+            sorted[k] = o[k];
+        });
+        return JSON.stringify(sorted);
+    }
+
+    function selectedAttributeValueMap(card) {
+        const map = {};
+        card.querySelectorAll('.attr-pav-checkbox:checked').forEach((cb) => {
+            const aid = cb.getAttribute('data-attribute-id');
+            const vid = cb.getAttribute('data-attribute-value-id');
+            if (!aid || !vid || vid === '') {
+                return;
+            }
+            map[aid] = vid;
+        });
+        return map;
+    }
+
+    function findVariantPrice(pricing, attrMap) {
+        const target = normAttrMap(attrMap);
+        const list = pricing.variants || [];
+        for (let i = 0; i < list.length; i += 1) {
+            if (normAttrMap(list[i].attributes) === target) {
+                return list[i].price;
+            }
+        }
+        return null;
+    }
+
+    function updatePriceForProductCard(productId) {
+        const card = document.querySelector('.product-card[data-id="' + productId + '"]');
+        if (!card) {
+            return;
+        }
+        const pricing = readPricing(card);
+        const priceEl = card.querySelector('.js-product-price');
+        const oldEl = card.querySelector('.js-old-price');
+        const variantSelect = card.querySelector('.product-variant-select');
+
+        let final = pricing.baseFinal;
+        let list = Math.max(pricing.baseList || 0, final * 1.08);
+        if (list <= final) {
+            list = final * 1.12;
+        }
+
+        if (variantSelect) {
+            const opt = variantSelect.selectedOptions[0];
+            if (opt && opt.dataset.price !== undefined && opt.dataset.price !== '') {
+                final = Number(opt.dataset.price);
+                list = Math.max(pricing.baseList || 0, final * 1.08);
+                if (list <= final) {
+                    list = final * 1.12;
+                }
+            }
+        } else {
+            const groups = card.querySelectorAll('.attribute-selection');
+            const map = selectedAttributeValueMap(card);
+            const selectedKeys = Object.keys(map);
+            if (groups.length > 0 && selectedKeys.length === groups.length) {
+                const vp = findVariantPrice(pricing, map);
+                if (vp !== null && !Number.isNaN(vp)) {
+                    final = vp;
+                    list = Math.max(pricing.baseList || 0, final * 1.08);
+                    if (list <= final) {
+                        list = final * 1.12;
+                    }
+                }
+            }
+        }
+
+        if (priceEl) {
+            priceEl.textContent = formatInr(final);
+        }
+        if (oldEl) {
+            oldEl.textContent = formatInr(list > final ? list : final * 1.1);
+        }
+    }
+
+    function updateProductPrice(productId) {
+        updatePriceForProductCard(productId);
+    }
+
+    function handleAddToCart(productId) {
+        const productCard = document.querySelector(`.product-card[data-id="${productId}"]`);
+        if (!productCard) {
+            return;
+        }
+
+        const variantSelect = document.getElementById('variant-select-' + productId);
+        const variantId = variantSelect ? variantSelect.value : null;
+
+        const pavIds = [];
+        productCard.querySelectorAll('.attribute-selection input.attr-pav-checkbox:checked').forEach((el) => {
+            pavIds.push(parseInt(el.value, 10));
+        });
+
+        addToCart(productId, variantId, pavIds);
+    }
+
+    function addToCart(productId, variantId = null, selectedProductAttributeValueIds = []) {
+        const body = {
             product_id: productId,
             quantity: 1,
-            product_variant_id: variantId,
-            selected_attributes: selectedAttributes
+            product_variant_id: variantId ? parseInt(variantId, 10) : null,
+            selected_product_attribute_value_ids: selectedProductAttributeValueIds,
+        };
+
+        fetch('/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: JSON.stringify(body),
         })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message); // Provide user feedback
-    })
-    .catch(err => console.error(err));
-}
-
-/*
-|--------------------------------------------------------------------------
-| CART COUNT UPDATE (optional)
-|--------------------------------------------------------------------------
-*/
-function updateCartCount() {
-
-    fetch('/cart')
-        .then(res => res.json())
-        .then(data => {
-
-            document.getElementById('cart-count').innerText =
-                data.cart?.total_quantity ?? 0;
-
-        });
-}
+            .then((res) => res.json().then((data) => ({ ok: res.ok, status: res.status, data })))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    alert(data.message || 'Could not add to cart');
+                    return;
+                }
+                alert(data.message || 'Added to cart');
+            })
+            .catch(() => alert('Network error'));
+    }
 </script>
 
 

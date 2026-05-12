@@ -119,10 +119,6 @@ class CartService
 
         $pavIds = array_values(array_unique(array_filter(array_map('intval', $selectedProductAttributeValueIds))));
 
-        if (! Auth::check()) {
-            return $this->addToCookieCart($product, $quantity, $variantId, $pavIds);
-        }
-
         $pavs = $this->loadProductAttributeValues($product->id, $pavIds);
 
         return $this->addToDatabaseCart($product, $quantity, $variantId, $pavs);
@@ -209,52 +205,57 @@ class CartService
         return $item;
     }
 
-    private function addToCookieCart(Product $product, int $quantity, ?int $variantId, array $pavIds): array
+    public function claimGuestCartForUser(int $userId, string $previousSessionId): void
     {
-        $pavs = $this->loadProductAttributeValues($product->id, $pavIds);
-        $signature = $this->attributeSignatureFromPavIds($pavIds);
+        $guestCart = Cart::query()
+            ->with('items')
+            ->where('session_id', $previousSessionId)
+            ->whereNull('user_id')
+            ->first();
 
-        if ($pavs->isNotEmpty()) {
-            $product->loadMissing('variants');
-            if ($product->type === 'configurable' && $product->variants->isNotEmpty()) {
-                $variantId = $this->resolveVariantId($product, $pavs);
+        if (! $guestCart) {
+            return;
+        }
+
+        $userCart = Cart::query()->firstOrCreate(
+            [
+                'user_id' => $userId,
+                'status' => 'active',
+            ],
+            [
+                'session_id' => session()->getId(),
+                'currency' => 'INR',
+            ]
+        );
+
+        foreach ($guestCart->items as $guestItem) {
+            $sig = $guestItem->attribute_signature ?? '';
+
+            $existing = CartItem::query()
+                ->where('cart_id', $userCart->id)
+                ->where('product_id', $guestItem->product_id)
+                ->where('product_variant_id', $guestItem->product_variant_id)
+                ->where('attribute_signature', $sig)
+                ->first();
+
+            if ($existing) {
+                $existing->quantity += $guestItem->quantity;
+                $existing->subtotal = $existing->price * $existing->quantity;
+                $existing->total = $existing->subtotal;
+                $existing->save();
+                $guestItem->delete();
+            } else {
+                $guestItem->cart_id = $userCart->id;
+                $guestItem->save();
             }
         }
 
-        $variant = $variantId
-            ? ProductVariant::query()->where('product_id', $product->id)->whereKey($variantId)->first()
-            : null;
-
-        $price = $variant
-            ? $variant->getFinalPriceAttribute()
-            : $product->final_price;
-
-        $cart = json_decode(Cookie::get(self::COOKIE_KEY, '[]'), true);
-        if (! is_array($cart)) {
-            $cart = [];
+        $guestCart->refresh();
+        if ($guestCart->items()->count() === 0) {
+            $guestCart->delete();
         }
 
-        $key = $product->id . ':' . ($variantId ?? '0') . ':' . $signature;
-
-        if (isset($cart[$key])) {
-            $cart[$key]['quantity'] += $quantity;
-        } else {
-            $cart[$key] = [
-                'product_id' => $product->id,
-                'variant_id' => $variantId,
-                'pav_ids'    => $pavIds,
-                'name'       => $product->name,
-                'price'      => $price,
-                'quantity'   => $quantity,
-                'meta'       => $pavs->isNotEmpty()
-                    ? ['product_attribute_values' => $this->buildAttributeMeta($pavs)]
-                    : null,
-            ];
-        }
-
-        Cookie::queue(self::COOKIE_KEY, json_encode($cart), 60 * 24 * 7);
-
-        return $cart[$key];
+        $this->recalculate($userCart);
     }
 
     public function mergeGuestCart(): void

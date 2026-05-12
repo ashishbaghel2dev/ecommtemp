@@ -151,6 +151,8 @@ class LoginController extends Controller
 
             Auth::login($user);
 
+            $guestSessionId = session()->getId();
+
             request()->session()->regenerate();
 
 
@@ -163,6 +165,8 @@ class LoginController extends Controller
             | MERGE GUEST WISHLIST
             |--------------------------------------------------------------------------
             */
+
+            $cartService->claimGuestCartForUser((int) $user->id, $guestSessionId);
 
             $wishlistService->mergeGuestWishlist();
             $cartService->mergeGuestCart();
@@ -322,6 +326,8 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $guestSessionId = session()->getId();
+
         $request->session()->regenerate();
 
         $user = Auth::user();
@@ -356,7 +362,10 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $cartService->claimGuestCartForUser((int) $user->id, $guestSessionId);
+
         $wishlistService->mergeGuestWishlist();
+        $cartService->mergeGuestCart();
 
 
 

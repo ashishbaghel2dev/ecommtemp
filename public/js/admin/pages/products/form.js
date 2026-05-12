@@ -17,6 +17,8 @@
     const addVariantButton = document.getElementById('add_variant_btn');
     const variantHeader = document.getElementById('variant_header');
     const variantRows = document.getElementById('variant_rows');
+    const generateVariantsButton = document.getElementById('generate_variants_btn');
+    const productNameInput = document.getElementById('product_name_input');
     const imagesInput = document.getElementById('product_images');
     const selectedImages = document.getElementById('selected_images');
     let variantIndex = 0;
@@ -160,12 +162,153 @@
         variantIndex = 0;
     }
 
+    function slugPart(text) {
+        return String(text || '')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 16);
+    }
+
+    function productSkuBase() {
+        const raw = productNameInput && productNameInput.value ? productNameInput.value.trim() : '';
+
+        const slug = slugPart(raw).slice(0, 24);
+
+        return slug || 'VARIANT';
+    }
+
+    function valueLabelFor(attributeId, valueId) {
+        const attrs = variantAttributes();
+        const attr = attrs.find((a) => String(a.id) === String(attributeId));
+
+        if (!attr) {
+            return String(valueId);
+        }
+
+        const val = attr.values.find((v) => String(v.id) === String(valueId));
+
+        return val ? val.value : String(valueId);
+    }
+
+    function getCheckedValuesByAttribute() {
+        const attrs = variantAttributes();
+        const result = {};
+
+        attrs.forEach((attr) => {
+            const checked = fieldsWrapper.querySelectorAll(
+                `input[name="attributes[${attr.id}][attribute_value_ids][]"]:checked`,
+            );
+
+            result[attr.id] = Array.from(checked).map((el) => el.value);
+        });
+
+        return result;
+    }
+
+    function cartesianSelections(attrs, map) {
+        let rows = [{}];
+
+        attrs.forEach((attr) => {
+            const vals = map[attr.id];
+
+            if (!vals || !vals.length) {
+                return;
+            }
+
+            const next = [];
+
+            rows.forEach((row) => {
+                vals.forEach((v) => {
+                    next.push({ ...row, [attr.id]: v });
+                });
+            });
+
+            rows = next;
+        });
+
+        return rows;
+    }
+
+    function generateVariantCombinations() {
+        if (productTypeSelect.value !== 'configurable') {
+            window.alert('Set product type to Configurable before generating variants.');
+
+            return;
+        }
+
+        const attrs = variantAttributes();
+
+        if (!attrs.length) {
+            window.alert('Choose a category that has attributes with option lists (e.g. Capacity, Star rating).');
+
+            return;
+        }
+
+        const map = getCheckedValuesByAttribute();
+        const missing = attrs.filter((a) => !map[a.id] || map[a.id].length === 0);
+
+        if (missing.length) {
+            window.alert(
+                `Tick at least one value under each option on the store:\n${missing.map((m) => m.name).join(', ')}`,
+            );
+
+            return;
+        }
+
+        const combos = cartesianSelections(attrs, map);
+
+        if (!combos.length) {
+            window.alert('No combinations to generate.');
+
+            return;
+        }
+
+        if (combos.length > 120) {
+            if (!window.confirm(`This will create ${combos.length} variant rows. Continue?`)) {
+                return;
+            }
+        }
+
+        resetVariantsForCategory();
+
+        const base = productSkuBase();
+        const used = new Set();
+
+        combos.forEach((combo) => {
+            const parts = attrs.map((attr) => slugPart(valueLabelFor(attr.id, combo[attr.id]))).filter(Boolean);
+            let sku = [base, ...parts].join('-').slice(0, 80);
+            let n = 1;
+
+            while (used.has(sku)) {
+                sku = `${base}-${n++}`.slice(0, 80);
+            }
+
+            used.add(sku);
+
+            addVariantRow({
+                attributes: combo,
+                sku,
+                price: '',
+                stock: 0,
+                in_stock: true,
+            });
+        });
+    }
+
     function toggleVariantSection(clearRows = false) {
         const isConfigurable = productTypeSelect.value === 'configurable';
+
         variantSection.style.display = isConfigurable ? 'block' : 'none';
+
+        if (generateVariantsButton) {
+            generateVariantsButton.disabled = !isConfigurable;
+            generateVariantsButton.style.opacity = isConfigurable ? '1' : '0.55';
+        }
 
         if (!isConfigurable && clearRows) {
             variantRows.innerHTML = '';
+            variantIndex = 0;
         }
     }
 
@@ -299,6 +442,11 @@
         resetVariantsForCategory();
     });
     addVariantButton.addEventListener('click', () => addVariantRow());
+
+    if (generateVariantsButton) {
+        generateVariantsButton.addEventListener('click', () => generateVariantCombinations());
+    }
+
     productTypeSelect.addEventListener('change', () => toggleVariantSection(true));
 
     initHtmlEditors();
