@@ -1,24 +1,26 @@
 <?php
-use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminReviewController;
+use App\Http\Controllers\Admin\AttributeController;
+use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductLabelController;
 use App\Http\Controllers\Admin\SocialMediaLinkController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WishlistManagementController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\Admin\NotificationController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\AttributeController;
-use App\Http\Controllers\Admin\AttributeValueController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\ProductLabelController;
 use App\Http\Controllers\Client\ReviewController;
-use App\Http\Controllers\Admin\AdminReviewController ;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\WishlistController;
-use App\Services\WishlistService;
-use App\Http\Controllers\Client\ProductUiController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Client\CartController;
+
 
 /*
 |------------------------
@@ -27,9 +29,15 @@ use App\Http\Controllers\Client\ProductUiController;
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-
-
 Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/increment/{id}', [CartController::class, 'increment'])->name('cart.increment');
+Route::post('/cart/decrement/{id}', [CartController::class, 'decrement'])->name('cart.decrement');
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
 /*
 |------------------------
@@ -79,20 +87,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markRead']);
 
     Route::get('reviews', [ReviewController::class, 'index']);
-Route::get('reviews/{review}', [ReviewController::class, 'show']);
+    Route::get('reviews/{review}', [ReviewController::class, 'show']);
 
 
 });
 
-  Route::get('/reviews', [ReviewController::class, 'index'])
-        ->name('reviews.index');
-
-    Route::post('/reviews/store', [ReviewController::class, 'store'])
-        ->name('reviews.store');
 
 
 
+Route::get('/reviews', [ReviewController::class, 'index'])
+    ->name('reviews.index');
 
+Route::post('/reviews/store', [ReviewController::class, 'store'])
+    ->name('reviews.store');
 
 /*
 |------------------------
@@ -126,8 +133,6 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-
-
     Route::get('/attributes', [AttributeController::class, 'index'])->name('attributes.index');
     Route::get('/attributes/create', [AttributeController::class, 'create'])->name('attributes.create');
     Route::post('/attributes', [AttributeController::class, 'store'])->name('attributes.store');
@@ -158,7 +163,6 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::delete('/product-labels/{id}', [ProductLabelController::class, 'destroy'])->name('productlabels.destroy');
     Route::get('/get-subcategories/{id}', [ProductController::class, 'getSubcategories']);
 
-
     Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
     Route::get('/reviews/{review}', [AdminReviewController::class, 'show'])->name('reviews.show');
     Route::post('/reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
@@ -166,6 +170,12 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::post('/reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('reviews.reply');
     Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::post('/reviews/{id}/restore', [AdminReviewController::class, 'restore'])->name('reviews.restore');
+
+    Route::get('/wishlists', [WishlistManagementController::class, 'index'])->name('wishlists.index');
+    Route::get(
+        '/wishlisted-products/{product_id}/users',
+        [WishlistManagementController::class, 'showUsers']
+    )->name('admin.wishlist.users');
 
 });
 
@@ -177,9 +187,3 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
-
-
-
-
-
-

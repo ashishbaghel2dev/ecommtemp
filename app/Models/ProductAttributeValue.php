@@ -27,4 +27,6 @@ class ProductAttributeValue extends Model
     {
         return $this->belongsTo(AttributeValue::class);
     }
+
+    
 }

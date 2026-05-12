@@ -55,6 +55,7 @@
             </a>
             <ul class="side-sub-menu">
                 <li><a href="{{ route('users.index') }}">Active Users</a></li>
+                <li><a href="{{ route('wishlists.index') }}">Whishlist</a></li>
                 <li><a href="#">Analytics</a></li>
             </ul>
         </li>

@@ -6,7 +6,7 @@
 
         @foreach($products as $product)
 
-            <div class="product-card">
+            <div class="product-card" data-id="{{ $product->id }}">
 
                 <!-- CATEGORY BADGE -->
                 <div class="product-badge">
@@ -39,14 +39,52 @@
 
                     <!-- ATTRIBUTES -->
                     <div class="attributes">
+                        @if($product->type === 'configurable' && $product->variants->count() > 0)
+                            <div class="attribute-item">
+                                <span class="label">Variant</span>
+                                <select class="value product-variant-select" id="variant-select-{{ $product->id }}" onchange="updateProductPrice({{ $product->id }}, this)">
+                                    @foreach($product->variants as $variant)
+                                        @php
+                                            $variantName = [];
+                                            if (isset($variantAttributes) && isset($variantValues) && is_array($variant->attributes)) {
+                                                foreach($variant->attributes as $attrId => $valId) {
+                                                    $attrName = $variantAttributes[$attrId] ?? 'Attr';
+                                                    $valValue = $variantValues[$valId] ?? 'Val';
+                                                    $variantName[] = "$attrName: $valValue";
+                                                }
+                                            }
+                                            $displayName = implode(', ', $variantName) ?: ($variant->sku ?: 'Default Variant');
+                                        @endphp
+                                        <option value="{{ $variant->id }}"
+                                                data-price="{{ $variant->getFinalPriceAttribute() }}"
+                                                data-sku="{{ $variant->sku }}">
+                                            {{ $displayName }} (₹{{ number_format($variant->getFinalPriceAttribute(), 2) }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
 
-                
-                        <div class="attribute-item">
-                            <span class="label">Color</span>
-                            <span class="value">
-                                {{ $product->attribute->attribute_value_id ?? '-' }}
-                            </span>
-                        </div>
+                        @php
+                            $groupedAttributes = $product->attributeValues->groupBy('attribute_id');
+                        @endphp
+
+                        @foreach($groupedAttributes as $attrId => $pavs)
+                            <div class="attribute-selection" data-attribute-id="{{ $attrId }}">
+                                <p class="label" style="margin-bottom: 5px; font-weight: 600;">{{ $pavs->first()->attribute->name }}:</p>
+                                <div class="options-group" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                                    @foreach($pavs as $pav)
+                                        <label class="option-item">
+                                            <input type="checkbox" 
+                                                   value="{{ $pav->attribute_value_id }}"
+                                                   class="attr-checkbox"
+                                                   style="display: none;">
+                                            <span class="option-label">{{ $pav->attributeValue ? $pav->attributeValue->value : ($pav->value ?? '-') }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
 
                         <div class="attribute-item">
                             <span class="label">Stock</span>
@@ -78,10 +116,9 @@
 
                     <!-- BUTTONS -->
                     <div class="button-group">
-
-                        <button class="cart-btn">
-                            Add to Cart
-                        </button>
+<button onclick="handleAddToCart({{ $product->id }})">
+    Add to Cart
+</button>
 
    <button
     class="wishlist-btn"
@@ -332,7 +369,22 @@
 .wishlist-btn:hover{
     background: #e63946;
     color: #fff;
+    }
+
+    .option-item {
+        cursor: pointer;
+        padding: 5px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        transition: 0.3s;
 }
+
+    .option-item:has(input:checked) {
+        background: #e63946;
+        color: #fff;
+        border-color: #e63946;
+    }
 
 /* MOBILE */
 
@@ -354,6 +406,76 @@
 }
 
 </style>
+
+<script>
+    document.querySelectorAll('.add-to-cart').forEach(btn => {
+    btn.addEventListener('click', function () {
+        addToCart(this.dataset.id);
+    });
+});
+
+
+function handleAddToCart(productId) {
+    const productCard = document.querySelector(`.product-card[data-id="${productId}"]`);
+    const variantSelect = document.getElementById('variant-select-' + productId);
+    
+    let variantId = variantSelect ? variantSelect.value : null;
+    let selectedAttributes = {};
+    
+    const attributeGroups = productCard.querySelectorAll('.attribute-selection');
+    attributeGroups.forEach(group => {
+        const attrId = group.dataset.attributeId;
+        const checked = Array.from(group.querySelectorAll('input[type="checkbox"]:checked')).map(el => el.value);
+        if (checked.length > 0) {
+            // Send as single value if only one selected, or array if multiple
+            selectedAttributes[attrId] = checked.length === 1 ? checked[0] : checked;
+        }
+    });
+
+    addToCart(productId, variantId, selectedAttributes);
+}
+
+function addToCart(productId, variantId = null, selectedAttributes = null) {
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1,
+            product_variant_id: variantId,
+            selected_attributes: selectedAttributes
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message); // Provide user feedback
+    })
+    .catch(err => console.error(err));
+}
+
+/*
+|--------------------------------------------------------------------------
+| CART COUNT UPDATE (optional)
+|--------------------------------------------------------------------------
+*/
+function updateCartCount() {
+
+    fetch('/cart')
+        .then(res => res.json())
+        .then(data => {
+
+            document.getElementById('cart-count').innerText =
+                data.cart?.total_quantity ?? 0;
+
+        });
+}
+</script>
+
+
 
 <script>
 

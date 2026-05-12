@@ -96,6 +96,12 @@ class Product extends Model
     return $this->hasMany(Wishlist::class);
 }
 
+public function cartItems()
+{
+    return $this->hasMany(CartItem::class);
+}
+
+
     /*
     |--------------------------------------------------------------------------
     | Helpers

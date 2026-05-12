@@ -87,4 +87,36 @@ class WishlistService
 
         return true;
     }
+
+
+    public function mergeGuestWishlist(): void
+{
+    if (!auth()->check()) {
+        return;
+    }
+
+    $cookieWishlist = json_decode(
+        Cookie::get('wishlist_products', '[]'),
+        true
+    );
+
+    if (empty($cookieWishlist)) {
+        return;
+    }
+
+    foreach ($cookieWishlist as $productId) {
+
+        Wishlist::firstOrCreate([
+            'user_id' => auth()->id(),
+            'product_id' => $productId,
+        ]);
+
+    }
+
+    Cookie::queue(
+        Cookie::forget('wishlist_products')
+    );
+}
+
+
 }
