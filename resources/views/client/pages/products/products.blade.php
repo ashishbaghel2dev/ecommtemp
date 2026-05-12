@@ -83,9 +83,12 @@
                             Add to Cart
                         </button>
 
-                        <button class="wishlist-btn">
-                            ♥
-                        </button>
+   <button
+    class="wishlist-btn"
+    data-product="{{ $product->id }}"
+>
+    ❤️ Wishlist
+</button>
 
                     </div>
 
@@ -351,3 +354,52 @@
 }
 
 </style>
+
+<script>
+
+document.querySelectorAll('.wishlist-btn')
+.forEach(button => {
+
+    button.addEventListener('click', async function () {
+
+        let productId = this.dataset.product;
+
+        try {
+
+            let response = await fetch(
+                `/wishlist/${productId}`,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type': 'application/json',
+
+                        'X-CSRF-TOKEN':
+                            document.querySelector(
+                                'meta[name="csrf-token"]'
+                            ).content
+                    }
+                }
+            );
+
+            let data = await response.json();
+
+            if (data.added) {
+
+                alert('Added to wishlist');
+
+            } else {
+
+                alert('Removed from wishlist');
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert('Something went wrong');
+        }
+    });
+});
+
+</script>

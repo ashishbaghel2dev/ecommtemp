@@ -80,5 +80,9 @@ public function reviewReports()
     return $this->hasMany(ReviewReport::class);
 }
 
+public function wishlists()
+{
+    return $this->hasMany(Wishlist::class);
+}
 
 }

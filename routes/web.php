@@ -16,6 +16,9 @@ use App\Http\Controllers\Admin\ProductLabelController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Admin\AdminReviewController ;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Client\WishlistController;
+use App\Services\WishlistService;
+use App\Http\Controllers\Client\ProductUiController;
 
 /*
 |------------------------
@@ -23,6 +26,10 @@ use App\Http\Controllers\Admin\UserController;
 |------------------------
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+
+
+Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 
 /*
 |------------------------
