@@ -42,9 +42,9 @@
             <tr>
                    <td>{{ $key+1}}</td>
                 <td>
-                    <img src="{{ asset($product->image ?: $product->images->first()->image) }}"
+                    {{-- <img src="{{ asset($product->image ?: $product->images->first()->image) }}"
                                              alt="{{ $product->name }}"
-                                             class="table-img">
+                                             class="table-img"> --}}
                 </td>
                
                 <td>{{ $product->name }}</td>
