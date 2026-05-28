@@ -40,11 +40,19 @@
         <tbody>
             @foreach($products as $key =>$product)
             <tr>
-                   <td>{{ $key+1}}</td>
+                <td>{{ $key+1}}</td>
                 <td>
-                    {{-- <img src="{{ asset($product->image ?: $product->images->first()->image) }}"
-                                             alt="{{ $product->name }}"
-                                             class="table-img"> --}}
+                    @php
+                        $image = $product->image ?: optional($product->images->first())->image;
+                    @endphp
+
+                    @if($image && file_exists(public_path($image)))
+                        <img src="{{ asset($image) }}"
+                             alt="{{ $product->name }}"
+                             class="table-img">
+                    @else
+                        <span class="no-image">No Image</span>
+                    @endif
                 </td>
                
                 <td>{{ $product->name }}</td>
@@ -66,7 +74,6 @@
     </a>
 
 </td>
-                </td>
             </tr>
             @endforeach
         </tbody>

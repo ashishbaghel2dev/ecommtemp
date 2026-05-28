@@ -11,7 +11,8 @@ class WishlistManagementController
     public function index()
     {
         // Sabhi products fetch karein aur unke total wishlist count ko saath mein layein
-        $products = Product::withCount('wishlists')
+        $products = Product::with('images')
+            ->withCount('wishlists')
             ->orderBy('wishlists_count', 'desc') // Sabse zyada popular product upar dikhega
             ->paginate(20); // Data zyada hai toh pagination zaroori hai
 
@@ -20,7 +21,7 @@ class WishlistManagementController
 
 public function showUsers($product_id)
 {
-    $product = Product::findOrFail($product_id);
+    $product = Product::with('images')->findOrFail($product_id);
 
     $users = Wishlist::where('product_id', $product_id)
         ->with('user')

@@ -4,19 +4,6 @@
 
 @section('content')
 
-<style>
-    .container{
-        width: 90%;
-        margin: 40px auto;
-    }
-
-</style>
-
-
-
-<div class="container">
-
- @include('client.pages.products.products')
-</div>
+<h1>home</h1>
 
 @endsection

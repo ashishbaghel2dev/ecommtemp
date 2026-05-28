@@ -67,7 +67,7 @@ return new class extends Migration
                 'product_id',
             ]);
 
-        });
+        }); 
     }
 
     /**

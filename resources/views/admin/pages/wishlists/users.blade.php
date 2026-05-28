@@ -29,21 +29,23 @@
         <div class="card-body d-flex align-items-center gap-3">
 
             @php
-                $image = $product->image
-                    ?? optional($product->images->first())->image
-                    ?? 'images/no-image.png';
+                $image = $product->image ?: optional($product->images->first())->image;
             @endphp
 
-            <img
-                src="{{ asset($image) }}"
-                alt="{{ $product->name }}"
-                style="
-                    width:90px;
-                    height:90px;
-                    object-fit:cover;
-                    border-radius:10px;
-                "
-            >
+            @if($image && file_exists(public_path($image)))
+                <img
+                    src="{{ asset($image) }}"
+                    alt="{{ $product->name }}"
+                    style="
+                        width:90px;
+                        height:90px;
+                        object-fit:cover;
+                        border-radius:10px;
+                    "
+                >
+            @else
+                <span class="no-image">No Image</span>
+            @endif
 
             <div>
 
