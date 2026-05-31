@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Banner;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Support\Collection;
@@ -76,6 +77,7 @@ class HomePageService
             'variantValues'     => $this->getVariantValues($variantValueIds),
             'reviews'           => $this->getReviews(),
             'homeSliders'       => $this->getHomeSliders(),
+            'homeCategories'    => $this->getHomeCategories(),
             'recentlyViewed'    => $this->getRecentlyViewedProducts(),
         ];
     }
@@ -88,8 +90,17 @@ class HomePageService
 
     private function getProducts(): Collection
     {
+        $search = trim((string) request('q', ''));
+
         return Product::query()
             ->active()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%")
+                        ->orWhere('short_description', 'like', "%{$search}%");
+                });
+            })
             ->with([
                 'category',
                 'labels',
@@ -167,6 +178,22 @@ class HomePageService
             ->where('is_active', 1)
             ->where('position', 'home_slider')
             ->orderBy('priority', 'asc')
+            ->get();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Home Categories
+    |--------------------------------------------------------------------------
+    */
+
+    private function getHomeCategories(): Collection
+    {
+        return Category::query()
+            ->active()
+            ->sorted()
+            ->with(['parent'])
+            ->withCount(['children', 'products'])
             ->get();
     }
 

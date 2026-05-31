@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
+use App\Models\ReviewVote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ReviewController extends Controller
 {
@@ -31,13 +34,29 @@ class ReviewController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'title' => 'nullable|string|max:255',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
-            'images.*' => 'nullable|image|max:2048',
-        ]);
+        if (! Auth::check()) {
+            return redirect()
+                ->route('login')
+                ->with('error', 'Please login to submit a review.');
+        }
+
+        $validated = $request->validate(
+            [
+                'product_id' => [
+                    'required',
+                    'exists:products,id',
+                    Rule::unique('reviews', 'product_id')
+                        ->where(fn ($query) => $query->where('user_id', Auth::id())),
+                ],
+                'title' => 'nullable|string|max:255',
+                'rating' => 'required|integer|min:1|max:5',
+                'comment' => 'nullable|string',
+                'images.*' => 'nullable|image|max:2048',
+            ],
+            [
+                'product_id.unique' => 'You have already reviewed this product.',
+            ]
+        );
 
         $review = Review::create([
             'product_id' => $validated['product_id'],
@@ -76,6 +95,8 @@ class ReviewController extends Controller
      */
     public function show(Review $review)
     {
+        abort_unless($review->status === 'approved', 404);
+
         $review->load([
             'user',
             'product',
@@ -83,6 +104,63 @@ class ReviewController extends Controller
         ]);
 
         return view('client.reviews.show', compact('review'));
+    }
+
+    public function helpful(Review $review)
+    {
+        if (! Auth::check()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please login to mark reviews as helpful.',
+            ], 401);
+        }
+
+        DB::transaction(function () use ($review) {
+            $vote = ReviewVote::query()
+                ->where('review_id', $review->id)
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if ($vote && $vote->is_helpful) {
+                $vote->delete();
+                $review->decrement('helpful_votes');
+
+                return;
+            }
+
+            if (! $vote) {
+                ReviewVote::create([
+                    'review_id' => $review->id,
+                    'user_id' => Auth::id(),
+                    'is_helpful' => true,
+                ]);
+
+                $review->increment('helpful_votes');
+
+                return;
+            }
+
+            $vote->update(['is_helpful' => true]);
+            $review->increment('helpful_votes');
+
+            if ($review->unhelpful_votes > 0) {
+                $review->decrement('unhelpful_votes');
+            }
+        });
+
+        $review->refresh();
+
+        $marked = ReviewVote::query()
+            ->where('review_id', $review->id)
+            ->where('user_id', Auth::id())
+            ->where('is_helpful', true)
+            ->exists();
+
+        return response()->json([
+            'status' => true,
+            'marked' => $marked,
+            'helpful_votes' => (int) $review->helpful_votes,
+        ]);
     }
 
     /**

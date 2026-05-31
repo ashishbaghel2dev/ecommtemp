@@ -16,6 +16,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\ProductUiController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\Client\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,10 @@ use App\Http\Controllers\Client\CartController;
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+Route::get('/products/{product:slug}', [ProductUiController::class, 'show'])
+    ->name('products.show');
+
+Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
 Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -100,6 +105,8 @@ Route::get('/reviews', [ReviewController::class, 'index'])
 
 Route::post('/reviews/store', [ReviewController::class, 'store'])
     ->name('reviews.store');
+Route::post('/reviews/{review}/helpful', [ReviewController::class, 'helpful'])
+    ->name('reviews.helpful');
 
 /*
 |------------------------
@@ -163,13 +170,15 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::delete('/product-labels/{id}', [ProductLabelController::class, 'destroy'])->name('productlabels.destroy');
     Route::get('/get-subcategories/{id}', [ProductController::class, 'getSubcategories']);
 
-    Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
-    Route::get('/reviews/{review}', [AdminReviewController::class, 'show'])->name('reviews.show');
-    Route::post('/reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
-    Route::post('/reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
-    Route::post('/reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('reviews.reply');
-    Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
-    Route::post('/reviews/{id}/restore', [AdminReviewController::class, 'restore'])->name('reviews.restore');
+    Route::get('/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
+    Route::get('/reviews/{review}/edit', [AdminReviewController::class, 'edit'])->name('admin.reviews.edit');
+    Route::put('/reviews/{review}', [AdminReviewController::class, 'update'])->name('admin.reviews.update');
+    Route::get('/reviews/{review}', [AdminReviewController::class, 'show'])->name('admin.reviews.show');
+    Route::post('/reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('admin.reviews.approve');
+    Route::post('/reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('admin.reviews.reject');
+    Route::post('/reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('admin.reviews.reply');
+    Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+    Route::post('/reviews/{id}/restore', [AdminReviewController::class, 'restore'])->name('admin.reviews.restore');
 
     Route::get('/wishlists', [WishlistManagementController::class, 'index'])->name('wishlists.index');
     Route::get(

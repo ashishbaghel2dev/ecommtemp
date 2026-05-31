@@ -8,3 +8,7 @@
 
 
 @import 'layout/navbar.css';
+
+@import 'components/showcase-banner-carousel.css';
+@import 'components/category-carousel.css';
+@import 'components/product-carousel.css';

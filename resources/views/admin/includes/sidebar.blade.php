@@ -59,7 +59,7 @@
                 <li><a href="#">Analytics</a></li>
             </ul>
         </li>
-        <li class="side-menu {{ request()->routeIs('banners.*', 'social-links.*', 'reviews.*') ? 'active' : '' }}">
+        <li class="side-menu {{ request()->routeIs('banners.*', 'social-links.*', 'admin.reviews.*') ? 'active' : '' }}">
             <a href="javascript:void(0)">
                 <i class="menu-icon ti ti-clipboard-check"></i>
                 <span class="menu-text">CMS</span>
@@ -69,6 +69,7 @@
                 <li><a href="#">Overview</a></li>
                 <li><a href="{{ route('banners.index') }}">Banners</a></li>
                 <li><a href="{{ route('social-links.index') }}">Social Links</a></li>
+                <li><a href="{{ url('/admin/dashboard/reviews') }}">Review Requests</a></li>
             
             </ul>
         </li>

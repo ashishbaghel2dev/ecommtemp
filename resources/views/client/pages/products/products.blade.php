@@ -615,6 +615,17 @@
                     alert(data.message || 'Could not add to cart');
                     return;
                 }
+                const navCount = document.querySelector('[data-navbar-cart-count]');
+                const navTotal = document.querySelector('[data-navbar-cart-total]');
+                if (navCount) {
+                    navCount.textContent = data.cart?.total_quantity ?? 0;
+                }
+                if (navTotal) {
+                    navTotal.textContent = Number(data.cart?.grand_total ?? data.cart?.subtotal ?? 0).toLocaleString('en-IN', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    });
+                }
                 alert(data.message || 'Added to cart');
             })
             .catch(() => alert('Network error'));
@@ -651,6 +662,10 @@ document.querySelectorAll('.wishlist-btn')
             );
 
             let data = await response.json();
+            const navWishlistCount = document.querySelector('[data-navbar-wishlist-count]');
+            if (navWishlistCount) {
+                navWishlistCount.textContent = data.count ?? 0;
+            }
 
             if (data.added) {
 

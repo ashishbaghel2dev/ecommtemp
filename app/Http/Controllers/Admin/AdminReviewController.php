@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
-class AdminReviewController 
+class AdminReviewController extends Controller
 {
     /**
      * Review Listing Page
@@ -49,18 +50,54 @@ class AdminReviewController
     /**
      * Show Single Review
      */
-    // public function show(Review $review)
-    // {
-    //     $review->load([
-    //         'user',
-    //         'product',
-    //         'images',
-    //         'reports',
-    //         'votes'
-    //     ]);
+    public function show(Review $review)
+    {
+        $review->load([
+            'user',
+            'product',
+            'images',
+            'reports',
+            'votes.user',
+        ]);
 
-    //     return view('admin.reviews.show', compact('review'));
-    // }
+        return view('admin.pages.reviews.show', compact('review'));
+    }
+
+    public function edit(Review $review)
+    {
+        $review->load([
+            'user',
+            'product',
+            'images',
+        ]);
+
+        return view('admin.pages.reviews.edit', compact('review'));
+    }
+
+    public function update(Request $request, Review $review)
+    {
+        $validated = $request->validate([
+            'title' => ['nullable', 'string', 'max:255'],
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'comment' => ['nullable', 'string'],
+            'admin_reply' => ['nullable', 'string', 'max:2000'],
+            'status' => ['required', Rule::in(['pending', 'approved', 'rejected'])],
+            'is_verified_purchase' => ['nullable', 'boolean'],
+        ]);
+
+        $review->update([
+            'title' => $validated['title'] ?? null,
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'] ?? null,
+            'admin_reply' => $validated['admin_reply'] ?? null,
+            'status' => $validated['status'],
+            'is_verified_purchase' => (bool) ($validated['is_verified_purchase'] ?? false),
+        ]);
+
+        return redirect()
+            ->route('admin.reviews.index')
+            ->with('success', 'Review request updated successfully.');
+    }
 
     /**
      * Approve Review

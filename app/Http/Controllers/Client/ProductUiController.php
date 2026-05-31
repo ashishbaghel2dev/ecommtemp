@@ -3,33 +3,81 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Product;
+use App\Models\Review;
+use App\Services\ProductPageService;
 use Illuminate\Support\Facades\Cookie;
 
 
-class ProductUiController 
+class ProductUiController extends Controller
 {
-   public function show(Product $product)
-{
-    $recentlyViewed = json_decode(
-        Cookie::get('recently_viewed_products', '[]'),
-        true
-    );
+    public function show(Product $product, ProductPageService $productPageService)
+    {
+        abort_unless($product->is_active, 404);
 
-    $recentlyViewed = array_diff($recentlyViewed, [$product->id]);
+        Product::query()
+            ->whereKey($product->id)
+            ->increment('view_count');
 
-    array_unshift($recentlyViewed, $product->id);
+        $recentlyViewed = json_decode(
+            Cookie::get('recently_viewed_products', '[]'),
+            true
+        );
 
-    $recentlyViewed = array_slice($recentlyViewed, 0, 10);
+        if (! is_array($recentlyViewed)) {
+            $recentlyViewed = [];
+        }
 
-    Cookie::queue(
-        'recently_viewed_products',
-        json_encode($recentlyViewed),
-        60 * 24 * 30
-    );
+        $recentlyViewed = array_values(array_diff($recentlyViewed, [$product->id]));
 
-    return view('client.pages.products.products', compact('product'));
-}
+        array_unshift($recentlyViewed, $product->id);
 
+        Cookie::queue(
+            'recently_viewed_products',
+            json_encode(array_slice($recentlyViewed, 0, 10)),
+            60 * 24 * 30
+        );
 
+        $data = $productPageService->getProductPageData($product);
+        $data['viewCount'] = Product::query()
+            ->whereKey($product->id)
+            ->value('view_count');
+        $data['visibleReviews'] = $this->getVisibleReviews($product);
+        $data['recentlyViewedProducts'] = $this->getRecentlyViewedProducts($recentlyViewed, $product);
+
+        return view('client.pages.products.show', $data);
+    }
+
+    private function getVisibleReviews(Product $product)
+    {
+        return Review::query()
+            ->with(['user', 'images'])
+            ->where('product_id', $product->id)
+            ->where('status', 'approved')
+            ->latest()
+            ->take(10)
+            ->get();
+    }
+
+    private function getRecentlyViewedProducts(array $recentlyViewedIds, Product $product)
+    {
+        $ids = collect($recentlyViewedIds)
+            ->filter(fn ($id) => (int) $id !== (int) $product->id)
+            ->unique()
+            ->take(4)
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        return Product::query()
+            ->active()
+            ->whereIn('id', $ids)
+            ->whereNotNull('slug')
+            ->with(['category'])
+            ->get()
+            ->sortBy(fn ($item) => $ids->search($item->id))
+            ->values();
+    }
 }
