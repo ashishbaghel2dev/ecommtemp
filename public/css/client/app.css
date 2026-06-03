@@ -8,7 +8,10 @@
 
 
 @import 'layout/navbar.css';
+@import 'layout/footer.css';
 
 @import 'components/showcase-banner-carousel.css';
 @import 'components/category-carousel.css';
+@import 'components/why-choose.css';
+@import 'components/review-carousel.css';
 @import 'components/product-carousel.css';

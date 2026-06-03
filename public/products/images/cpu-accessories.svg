@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700" role="img" aria-label="CPU accessories">
+  <rect width="900" height="700" fill="#f7f4ee"/>
+  <rect x="165" y="120" width="570" height="460" rx="42" fill="#1f2937"/>
+  <rect x="230" y="185" width="440" height="330" rx="30" fill="#f2c14e"/>
+  <circle cx="450" cy="350" r="115" fill="#111827"/>
+  <circle cx="450" cy="350" r="42" fill="#8ecae6"/>
+  <path d="M450 235c55 58 50 99 0 115-58-55-98-51-115 0 56-58 97-52 115 0-55 58-50 99 0 115 58-55 98-51 115 0-56-58-97-52-115 0 55-58 50-99 0-115 58 55 98 51 115 0-56 58-97 52-115 0z" fill="#ffffff"/>
+  <text x="450" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#1f2937">CPU ACCESSORIES</text>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700" role="img" aria-label="Storage accessories">
+  <rect width="900" height="700" fill="#f1f5f9"/>
+  <rect x="190" y="170" width="520" height="350" rx="38" fill="#0f172a"/>
+  <rect x="250" y="230" width="400" height="95" rx="22" fill="#38bdf8"/>
+  <rect x="250" y="355" width="400" height="95" rx="22" fill="#facc15"/>
+  <circle cx="610" cy="277" r="18" fill="#0f172a"/>
+  <circle cx="610" cy="402" r="18" fill="#0f172a"/>
+  <text x="450" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#0f172a">STORAGE ACCESSORIES</text>
+</svg>

@@ -7,6 +7,7 @@ use App\Models\AttributeValue;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductLabel;
 use App\Models\Review;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cookie;
@@ -78,6 +79,8 @@ class HomePageService
             'reviews'           => $this->getReviews(),
             'homeSliders'       => $this->getHomeSliders(),
             'homeCategories'    => $this->getHomeCategories(),
+            'labelProductCarousels' => $this->getLabelProductCarousels(),
+            'categoryProductCarousels' => $this->getCategoryProductCarousels(),
             'recentlyViewed'    => $this->getRecentlyViewedProducts(),
         ];
     }
@@ -195,6 +198,70 @@ class HomePageService
             ->with(['parent'])
             ->withCount(['children', 'products'])
             ->get();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Label Product Carousels
+    |--------------------------------------------------------------------------
+    */
+
+    private function getLabelProductCarousels(): Collection
+    {
+        return ProductLabel::query()
+            ->whereIn('slug', ['new-arrived', 'best-product'])
+            ->where('is_active', true)
+            ->with(['products' => fn ($query) => $this->productCarouselQuery($query)->take(12)])
+            ->orderByRaw("FIELD(slug, 'new-arrived', 'best-product')")
+            ->get()
+            ->map(fn ($label) => [
+                'key' => 'label-' . $label->slug,
+                'eyebrow' => 'Product label',
+                'title' => $label->name,
+                'promoImage' => 'products/images/' . $label->slug . '.svg',
+                'products' => $label->products,
+            ])
+            ->filter(fn ($carousel) => $carousel['products']->isNotEmpty())
+            ->values();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Product Carousels
+    |--------------------------------------------------------------------------
+    */
+
+    private function getCategoryProductCarousels(): Collection
+    {
+        return Category::query()
+            ->active()
+            ->whereIn('slug', ['cpu-accessories', 'wires-cables', 'network-adapters'])
+            ->with(['products' => fn ($query) => $this->productCarouselQuery($query)->take(12)])
+            ->orderByRaw("FIELD(slug, 'cpu-accessories', 'wires-cables', 'network-adapters')")
+            ->get()
+            ->map(fn ($category) => [
+                'key' => 'category-' . $category->slug,
+                'eyebrow' => 'Shop by category',
+                'title' => $category->name,
+                'promoImage' => $category->image,
+                'products' => $category->products,
+            ])
+            ->filter(fn ($carousel) => $carousel['products']->isNotEmpty())
+            ->values();
+    }
+
+    private function productCarouselQuery($query)
+    {
+        return $query
+            ->active()
+            ->with([
+                'category',
+                'labels',
+                'variants',
+                'attributeValues.attribute',
+                'attributeValues.attributeValue',
+            ])
+            ->latest();
     }
 
     /*
