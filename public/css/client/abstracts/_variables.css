@@ -1,8 +1,8 @@
 :root {
   /* Brand Colors */
-  --color-primary: #E62E2D ;
-  --color-accent: #b07d4e;      
-  --color-sale: #d9534f;     
+  --color-primary: #E62E2D;
+  --color-accent: #000000;
+  --color-sale: #E62E2D;
   
   /* Neutral Palette */
   --color-white: #ffffff;

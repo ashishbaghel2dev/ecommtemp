@@ -3,8 +3,8 @@
   --color-primary: #E62E2D;
     --color-primary-light: #ffa4a4;
         --color-primary-light-hard: #ffdede;
-  --color-accent: #b07d4e;      
-  --color-sale: #d9534f;     
+  --color-accent: #000000;      
+  --color-sale: #E62E2D;     
   
   /* Neutral Palette */
   --color-white: #ffffff;
@@ -121,7 +121,7 @@
 }
 
 .search-container button:hover {
-    background: #c92524;
+    background: #b91f1e;
 }
 
 .header-actions {
@@ -196,7 +196,7 @@
     position: absolute;
     top: -8px;
     right: -10px;
-    background: #e63946;
+    background: #E62E2D;
     color: #fff;
     width:18px;
     height: 18px;
@@ -401,7 +401,7 @@
 
 .deal i {
     font-size: 32px;
-    color: #e63946;
+    color: #E62E2D;
 }
 
 .category-drawer-backdrop {

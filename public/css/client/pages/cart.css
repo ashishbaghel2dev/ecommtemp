@@ -293,6 +293,7 @@
     border: 0;
     background: #111827;
     color: #ffffff;
+    text-decoration: none;
 }
 
 .cart-clear {
@@ -302,10 +303,11 @@
     color: #344054;
 }
 
-.cart-checkout:disabled,
+.cart-checkout.disabled,
 .cart-clear:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .cart-summary-note {

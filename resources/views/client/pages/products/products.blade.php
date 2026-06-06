@@ -210,7 +210,7 @@
 }
 
 .view-all-btn:hover{
-    background: #e63946;
+    background: #E62E2D;
 }
 
 /* GRID */
@@ -244,7 +244,7 @@
     position: absolute;
     top: 15px;
     left: 15px;
-    background: #e63946;
+    background: #E62E2D;
     color: #fff;
     padding: 6px 14px;
     border-radius: 30px;
@@ -344,7 +344,7 @@
 .product-price{
     font-size: 26px;
     font-weight: 700;
-    color: #e63946;
+    color: #E62E2D;
     margin-top: 3px;
 }
 
@@ -377,7 +377,7 @@
 }
 
 .cart-btn:hover{
-    background: #e63946;
+    background: #E62E2D;
 }
 
 .wishlist-btn{
@@ -391,7 +391,7 @@
 }
 
 .wishlist-btn:hover{
-    background: #e63946;
+    background: #E62E2D;
     color: #fff;
     }
 
@@ -405,9 +405,9 @@
 }
 
     .option-item:has(input:checked) {
-        background: #e63946;
+        background: #E62E2D;
         color: #fff;
-        border-color: #e63946;
+        border-color: #E62E2D;
     }
 
 /* MOBILE */

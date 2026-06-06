@@ -224,8 +224,8 @@
 
 .product-price-block span {
     align-self: center;
-    background: #fff7ed;
-    color: #c2410c;
+    background: #fff5f5;
+    color: #E62E2D;
 }
 
 .product-options {
@@ -552,8 +552,8 @@
 .product-review-title-line em {
     border-radius: 999px;
     padding: 4px 8px;
-    background: #fff7ed;
-    color: #c2410c;
+    background: #fff5f5;
+    color: #E62E2D;
     font-size: 11px;
     font-style: normal;
     font-weight: 800;

@@ -145,12 +145,12 @@
                         </div>
                     </dl>
 
-                    <button type="button"
-                            class="cart-checkout"
-                            {{ $cartItems->isEmpty() ? 'disabled' : '' }}>
+                    <a href="{{ route('checkout.index') }}"
+                            class="cart-checkout {{ $cartItems->isEmpty() ? 'disabled' : '' }}"
+                            aria-disabled="{{ $cartItems->isEmpty() ? 'true' : 'false' }}">
                         <i class="ti ti-credit-card"></i>
                         <span>Checkout</span>
-                    </button>
+                    </a>
 
                     <button type="button"
                             class="cart-clear"
@@ -208,7 +208,9 @@
             }
 
             const isEmpty = Number(quantity) <= 0;
-            document.querySelector('.cart-checkout').disabled = isEmpty;
+            const checkoutLink = document.querySelector('.cart-checkout');
+            checkoutLink.classList.toggle('disabled', isEmpty);
+            checkoutLink.setAttribute('aria-disabled', isEmpty ? 'true' : 'false');
             document.querySelector('.cart-clear').disabled = isEmpty;
         }
 

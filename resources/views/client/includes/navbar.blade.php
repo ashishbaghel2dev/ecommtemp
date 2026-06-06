@@ -22,11 +22,11 @@
 
         <div class="header-actions">
 
-            <a href="{{ route('login') }}" class="action-item">
+            <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="action-item">
                 <i class="ti ti-user"></i>
                 <div>
-                    <span>Login</span>
-                    <strong>Account</strong>
+                    <span>{{ auth()->check() ? 'My' : 'Login' }}</span>
+                    <strong>{{ auth()->check() ? 'Dashboard' : 'Account' }}</strong>
                 </div>
             </a>
 
@@ -257,7 +257,7 @@
         <ul class="category-drawer-list">
             @forelse($navCategories as $category)
                 <li class="category-drawer-item">
-                    <a href="{{ route('home', ['category' => $category->slug]) }}" class="category-drawer-link">
+                    <a href="{{ route('categories.show', $category->slug) }}" class="category-drawer-link">
                         @if($category->image)
                             <img src="{{ asset($category->image) }}" alt="">
                         @else
@@ -279,10 +279,10 @@
 
                             <div class="category-panel-links">
                                 <h3>{{ $category->name }}</h3>
-                                <a href="{{ route('home', ['category' => $category->slug]) }}">View all {{ $category->name }}</a>
+                                <a href="{{ route('categories.show', $category->slug) }}">View all {{ $category->name }}</a>
 
                                 @forelse($category->children as $child)
-                                    <a href="{{ route('home', ['category' => $child->slug]) }}">{{ $child->name }}</a>
+                                    <a href="{{ route('categories.show', $child->slug) }}">{{ $child->name }}</a>
                                 @empty
                                     <span>No subcategories added yet.</span>
                                 @endforelse

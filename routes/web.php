@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\HomeCarouselImageController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductLabelController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WishlistManagementController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductUiController;
@@ -33,6 +35,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products/{product:slug}', [ProductUiController::class, 'show'])
     ->name('products.show');
 
+Route::get('/categories/{category:slug}', [ProductUiController::class, 'category'])
+    ->name('categories.show');
+
 Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
 Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 
@@ -43,6 +48,10 @@ Route::post('/cart/increment/{id}', [CartController::class, 'increment'])->name(
 Route::post('/cart/decrement/{id}', [CartController::class, 'decrement'])->name('cart.decrement');
 Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
 /*
 |------------------------
@@ -85,6 +94,16 @@ Route::prefix('auth/google')->controller(LoginController::class)->group(function
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+    Route::get('/dashboard/profile', [DashboardController::class, 'profile'])
+        ->name('dashboard.profile');
+    Route::get('/dashboard/profile/edit', [DashboardController::class, 'editProfile'])
+        ->name('dashboard.profile.edit');
+    Route::put('/dashboard/profile', [DashboardController::class, 'updateProfile'])
+        ->name('dashboard.profile.update');
+    Route::post('/dashboard/profile/addresses', [DashboardController::class, 'storeAddress'])
+        ->name('dashboard.addresses.store');
+    Route::put('/dashboard/profile/addresses/{address}', [DashboardController::class, 'updateAddress'])
+        ->name('dashboard.addresses.update');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -125,6 +144,9 @@ Route::prefix('admin/dashboard')->middleware(['auth', 'role:admin'])->group(func
     Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
     Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
     Route::delete('banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
+    Route::get('/home-carousel-images', [HomeCarouselImageController::class, 'index'])->name('home-carousel-images.index');
+    Route::put('/home-carousel-images/{homeCarouselImage}', [HomeCarouselImageController::class, 'update'])->name('home-carousel-images.update');
 
     Route::get('/social-links', [SocialMediaLinkController::class, 'index'])->name('social-links.index');
     Route::get('/social-links/create', [SocialMediaLinkController::class, 'create'])->name('social-links.create');

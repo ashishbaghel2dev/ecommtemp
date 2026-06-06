@@ -22,7 +22,7 @@
 
         <div class="category-carousel-track" data-category-carousel-track>
             @foreach($categoryCarouselItems as $category)
-                <a href="{{ route('home', ['category' => $category->slug]) }}" class="category-card">
+                <a href="{{ route('categories.show', $category->slug) }}" class="category-card">
                     <span class="category-card-media">
                         @if($category->image)
                             <img src="{{ asset($category->image) }}"

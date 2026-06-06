@@ -26,18 +26,18 @@
                 <li><a href="{{ route('wishlist.index') }}">Wishlist</a></li>
                 <li><a href="{{ route('cart.index') }}">Cart</a></li>
                 <li><a href="{{ route('reviews.index') }}">Customer Reviews</a></li>
-                <li><a href="{{ route('login') }}">Login</a></li>
+                <li><a href="{{ auth()->check() ? route('dashboard') : route('login') }}">{{ auth()->check() ? 'Dashboard' : 'Login' }}</a></li>
             </ul>
         </div>
 
         <div class="site-footer-column">
             <h3>Shop Categories</h3>
             <ul>
-                <li><a href="{{ route('home', ['category' => 'cpu-accessories']) }}">CPU Accessories</a></li>
-                <li><a href="{{ route('home', ['category' => 'cabinets']) }}">Cabinets</a></li>
-                <li><a href="{{ route('home', ['category' => 'wires-cables']) }}">Wires & Cables</a></li>
-                <li><a href="{{ route('home', ['category' => 'keyboards']) }}">Keyboards</a></li>
-                <li><a href="{{ route('home', ['category' => 'network-adapters']) }}">Network Adapters</a></li>
+                <li><a href="{{ route('categories.show', 'cpu-accessories') }}">CPU Accessories</a></li>
+                <li><a href="{{ route('categories.show', 'cabinets') }}">Cabinets</a></li>
+                <li><a href="{{ route('categories.show', 'wires-cables') }}">Wires & Cables</a></li>
+                <li><a href="{{ route('categories.show', 'keyboards') }}">Keyboards</a></li>
+                <li><a href="{{ route('categories.show', 'network-adapters') }}">Network Adapters</a></li>
             </ul>
         </div>
 

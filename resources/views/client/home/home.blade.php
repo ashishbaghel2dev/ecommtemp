@@ -32,7 +32,7 @@
     'carouselKey' => 'featured-products',
     'carouselEyebrow' => 'Featured products',
     'carouselTitle' => 'Products You May Like',
-    'carouselPromoImage' => 'products/images/featured-products.svg',
+    'carouselPromoImage' => $featuredProductsPromoImage ?? 'products/images/featured-products.svg',
     'carouselProducts' => $products,
 ])
 

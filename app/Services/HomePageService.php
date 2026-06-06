@@ -6,6 +6,7 @@ use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\HomeCarouselImage;
 use App\Models\Product;
 use App\Models\ProductLabel;
 use App\Models\Review;
@@ -81,6 +82,7 @@ class HomePageService
             'homeCategories'    => $this->getHomeCategories(),
             'labelProductCarousels' => $this->getLabelProductCarousels(),
             'categoryProductCarousels' => $this->getCategoryProductCarousels(),
+            'featuredProductsPromoImage' => $this->getCarouselPromoImage('featured-products', 'products/images/featured-products.svg'),
             'recentlyViewed'    => $this->getRecentlyViewedProducts(),
         ];
     }
@@ -208,6 +210,8 @@ class HomePageService
 
     private function getLabelProductCarousels(): Collection
     {
+        $carouselImages = $this->getCarouselImages();
+
         return ProductLabel::query()
             ->whereIn('slug', ['new-arrived', 'best-product'])
             ->where('is_active', true)
@@ -218,7 +222,7 @@ class HomePageService
                 'key' => 'label-' . $label->slug,
                 'eyebrow' => 'Product label',
                 'title' => $label->name,
-                'promoImage' => 'products/images/' . $label->slug . '.svg',
+                'promoImage' => $carouselImages->get('label-' . $label->slug, 'products/images/' . $label->slug . '.svg'),
                 'products' => $label->products,
             ])
             ->filter(fn ($carousel) => $carousel['products']->isNotEmpty())
@@ -233,6 +237,8 @@ class HomePageService
 
     private function getCategoryProductCarousels(): Collection
     {
+        $carouselImages = $this->getCarouselImages();
+
         return Category::query()
             ->active()
             ->whereIn('slug', ['cpu-accessories', 'wires-cables', 'network-adapters'])
@@ -243,7 +249,7 @@ class HomePageService
                 'key' => 'category-' . $category->slug,
                 'eyebrow' => 'Shop by category',
                 'title' => $category->name,
-                'promoImage' => $category->image,
+                'promoImage' => $carouselImages->get('category-' . $category->slug, $category->image),
                 'products' => $category->products,
             ])
             ->filter(fn ($carousel) => $carousel['products']->isNotEmpty())
@@ -262,6 +268,18 @@ class HomePageService
                 'attributeValues.attributeValue',
             ])
             ->latest();
+    }
+
+    private function getCarouselPromoImage(string $key, string $fallback): string
+    {
+        return $this->getCarouselImages()->get($key, $fallback);
+    }
+
+    private function getCarouselImages(): Collection
+    {
+        return HomeCarouselImage::query()
+            ->whereNotNull('image')
+            ->pluck('image', 'carousel_key');
     }
 
     /*

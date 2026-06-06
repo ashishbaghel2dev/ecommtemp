@@ -96,6 +96,11 @@ public function activeCart()
         ->where('status', 'active');
 }
 
+public function addresses()
+{
+    return $this->hasMany(UserAddress::class);
+}
+
 
 
 }
