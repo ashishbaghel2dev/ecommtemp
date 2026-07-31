@@ -7,6 +7,9 @@
         @foreach($products as $product)
 
             @php
+                $primaryImage = $product->image ?: optional($product->images->first())->image ?: 'images/no-image.png';
+                $hoverImage = optional($product->images->firstWhere('image', '!=', $primaryImage))->image
+                    ?: optional($product->images->skip(1)->first())->image;
                 $pricingPayload = [
                     'baseFinal' => (float) $product->final_price,
                     'baseList' => (float) ($product->price ?? 0),
@@ -35,13 +38,20 @@
                 </div>
 
                 <!-- PRODUCT IMAGE -->
-                <div class="product-image-wrapper">
+                <div class="product-image-wrapper {{ $hoverImage ? 'has-hover-image' : '' }}">
 
                     <img 
-                        src="{{ asset($product->image ?? 'images/no-image.png') }}"
+                        src="{{ asset($primaryImage) }}"
                         alt="{{ $product->name }}"
-                        class="product-image"
+                        class="product-image product-card-image-primary"
                     >
+                    @if($hoverImage)
+                        <img
+                            src="{{ asset($hoverImage) }}"
+                            alt="{{ $product->name }}"
+                            class="product-image product-card-image-hover"
+                        >
+                    @endif
 
                 </div>
 
@@ -256,6 +266,7 @@
 /* IMAGE */
 
 .product-image-wrapper{
+    position: relative;
     width: 100%;
     height: 260px;
     background: #f8f8f8;
@@ -263,14 +274,30 @@
 }
 
 .product-image{
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: 0.5s ease;
+    transition: opacity 0.32s ease, transform 0.32s ease;
 }
 
-.product-card:hover .product-image{
-    transform: scale(1.08);
+.product-card-image-primary{
+    opacity: 1;
+}
+
+.product-card-image-hover{
+    opacity: 0;
+}
+
+.product-card:hover .has-hover-image .product-card-image-primary{
+    opacity: 0;
+    transform: scale(1.04);
+}
+
+.product-card:hover .has-hover-image .product-card-image-hover{
+    opacity: 1;
+    transform: scale(1.04);
 }
 
 /* CONTENT */
@@ -662,9 +689,12 @@ document.querySelectorAll('.wishlist-btn')
             );
 
             let data = await response.json();
-            const navWishlistCount = document.querySelector('[data-navbar-wishlist-count]');
-            if (navWishlistCount) {
-                navWishlistCount.textContent = data.count ?? 0;
+            if (window.updateNavbarWishlistCount) {
+                window.updateNavbarWishlistCount(data.count ?? 0);
+            } else {
+                document.querySelectorAll('[data-navbar-wishlist-count]').forEach((navWishlistCount) => {
+                    navWishlistCount.textContent = data.count ?? 0;
+                });
             }
 
             if (data.added) {

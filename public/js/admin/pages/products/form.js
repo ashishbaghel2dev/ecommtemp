@@ -337,6 +337,40 @@
         });
     }
 
+    function initExistingImageManager() {
+        document.querySelectorAll('[data-existing-image-card]').forEach((card) => {
+            const removeInput = card.querySelector('[data-remove-existing-image]');
+            const mainInput = card.querySelector('input[name="main_image_id"]');
+
+            if (!removeInput) {
+                return;
+            }
+
+            removeInput.addEventListener('change', () => {
+                card.classList.toggle('is-marked-remove', removeInput.checked);
+
+                if (removeInput.checked && mainInput?.checked) {
+                    const nextMain = Array.from(document.querySelectorAll('[data-existing-image-card]'))
+                        .map((item) => item.querySelector('input[name="main_image_id"]'))
+                        .find((input) => input && !input.closest('[data-existing-image-card]')?.querySelector('[data-remove-existing-image]')?.checked);
+
+                    if (nextMain) {
+                        nextMain.checked = true;
+                    } else {
+                        mainInput.checked = false;
+                    }
+                }
+            });
+
+            mainInput?.addEventListener('change', () => {
+                if (mainInput.checked) {
+                    removeInput.checked = false;
+                    card.classList.remove('is-marked-remove');
+                }
+            });
+        });
+    }
+
     function initHtmlEditors() {
         if (window.ClassicEditor) {
             document.querySelectorAll('.js-html-editor').forEach((textarea) => {
@@ -451,6 +485,7 @@
 
     initHtmlEditors();
     initImagePreview();
+    initExistingImageManager();
     renderAttributes();
 
     if (productTypeSelect.value === 'configurable') {

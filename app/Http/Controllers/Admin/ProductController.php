@@ -41,6 +41,8 @@ class ProductController
 
 public function create()
 {
+    $this->ensureDefaultProductLabels();
+
     $categories = $this->categoryOptions();
     $labels = ProductLabel::where('is_active', true)->orderBy('name')->get();
     $attributesByCategory = $this->attributesByCategory();
@@ -65,6 +67,7 @@ public function create()
             'discount_price' => 'nullable|numeric',
             'sale_price' => 'nullable|numeric',
             'stock' => 'nullable|integer|min:0',
+            'min_order_qty' => 'nullable|integer|min:1',
             'image' => 'nullable|image|max:2048',
             'images' => 'nullable|array',
             'images.*' => 'image|max:2048',
@@ -101,6 +104,7 @@ public function create()
                 'sale_start' => $request->sale_start,
                 'sale_end' => $request->sale_end,
                 'stock' => $request->stock ?? 0,
+                'min_order_qty' => $request->min_order_qty ?? 1,
                 'manage_stock' => $request->has('manage_stock'),
                 'in_stock' => $request->has('in_stock'),
                 'image' => $imagePath,
@@ -147,7 +151,14 @@ public function create()
     */
     public function edit($id)
     {
-        $product = Product::with(['images', 'attributeValues.attributeValue', 'variants', 'labels'])
+        $this->ensureDefaultProductLabels();
+
+        $product = Product::with([
+                'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order')->orderBy('id'),
+                'attributeValues.attributeValue',
+                'variants',
+                'labels',
+            ])
             ->findOrFail($id);
         $categories = $this->categoryOptions();
         $labels = ProductLabel::where('is_active', true)->orderBy('name')->get();
@@ -198,9 +209,15 @@ public function create()
             'discount_price' => 'nullable|numeric',
             'sale_price' => 'nullable|numeric',
             'stock' => 'nullable|integer|min:0',
+            'min_order_qty' => 'nullable|integer|min:1',
             'image' => 'nullable|image|max:2048',
             'images' => 'nullable|array',
             'images.*' => 'image|max:2048',
+            'existing_images' => 'nullable|array',
+            'existing_images.*.sort_order' => 'nullable|integer|min:0',
+            'main_image_id' => 'nullable|integer',
+            'remove_image_ids' => 'nullable|array',
+            'remove_image_ids.*' => 'integer',
             'labels' => 'nullable|array',
             'labels.*' => 'exists:product_labels,id',
             'attributes' => 'nullable|array',
@@ -244,6 +261,7 @@ public function create()
                 'sale_start' => $request->sale_start,
                 'sale_end' => $request->sale_end,
                 'stock' => $request->stock ?? 0,
+                'min_order_qty' => $request->min_order_qty ?? 1,
                 'manage_stock' => $request->has('manage_stock'),
                 'in_stock' => $request->has('in_stock'),
                 'image' => $imagePath ?: $product->image,
@@ -275,6 +293,8 @@ public function create()
                 ]);
             }
 
+            $this->syncProductImages($product, $request);
+
             $product->labels()->sync($request->input('labels', []));
             $this->syncAttributes($product, $request->input('attributes', []));
             if ($product->type === 'configurable') {
@@ -296,40 +316,20 @@ public function create()
 
     /*
     |--------------------------------------------------------------------------
-    | DELETE PRODUCT
+    | MOVE PRODUCT TO TRASH
     |--------------------------------------------------------------------------
     */
     public function destroy($id)
     {
-        $product = Product::with(['images', 'variants', 'attributeValues', 'labels'])->findOrFail($id);
-
-        DB::beginTransaction();
+        $product = Product::findOrFail($id);
 
         try {
-            if ($product->image) {
-                File::delete(public_path($product->image));
-            }
-
-            foreach ($product->images as $image) {
-                if ($image->image) {
-                    File::delete(public_path($image->image));
-                }
-            }
-
-            $product->labels()->detach();
-            $product->attributeValues()->delete();
-            $product->variants()->delete();
-            $product->images()->delete();
             $product->delete();
-
-            DB::commit();
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Product deleted successfully');
+        return back()->with('success', 'Product moved to trash successfully');
     }
 
     public function categoryAttributes(Category $category)
@@ -438,13 +438,82 @@ public function create()
         }
     }
 
+    private function syncProductImages(Product $product, Request $request): void
+    {
+        $removeIds = collect($request->input('remove_image_ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->values();
+
+        if ($removeIds->isNotEmpty()) {
+            $imagesToRemove = $product->images()
+                ->whereIn('id', $removeIds)
+                ->get();
+
+            foreach ($imagesToRemove as $image) {
+                File::delete($this->productImageStoragePath($image->image));
+                $image->delete();
+            }
+        }
+
+        foreach ($request->input('existing_images', []) as $imageId => $data) {
+            $product->images()
+                ->whereKey((int) $imageId)
+                ->update([
+                    'sort_order' => max(0, (int) ($data['sort_order'] ?? 0)),
+                    'is_main' => false,
+                ]);
+        }
+
+        $mainImageId = (int) $request->input('main_image_id');
+        $mainImage = null;
+
+        if ($mainImageId && ! $removeIds->contains($mainImageId)) {
+            $mainImage = $product->images()->whereKey($mainImageId)->first();
+        }
+
+        if (! $mainImage) {
+            $mainImage = $product->images()
+                ->orderByDesc('is_main')
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->first();
+        }
+
+        if ($mainImage) {
+            $product->images()->update(['is_main' => false]);
+            $mainImage->update(['is_main' => true]);
+            $product->forceFill(['image' => $mainImage->image])->save();
+            return;
+        }
+
+        $product->forceFill(['image' => null])->save();
+    }
+
+    private function ensureDefaultProductLabels(): void
+    {
+        collect([
+            ['name' => 'New Arrivals', 'slug' => 'new-arrived', 'color' => '#315411'],
+            ['name' => 'Bestsellers', 'slug' => 'best-product', 'color' => '#315411'],
+        ])->each(function (array $label) {
+            ProductLabel::firstOrCreate(
+                ['slug' => $label['slug']],
+                [
+                    'name' => $label['name'],
+                    'color' => $label['color'],
+                    'is_active' => true,
+                ]
+            );
+        });
+    }
+
     private function storeImage(Request $request)
     {
         if (! $request->hasFile('image')) {
             return null;
         }
 
-        $directory = public_path('products/images');
+        $directory = public_path('product-images');
 
         if (! File::exists($directory)) {
             File::makeDirectory($directory, 0755, true);
@@ -463,7 +532,7 @@ public function create()
             return [];
         }
 
-        $directory = public_path('products/images');
+        $directory = public_path('product-images');
 
         if (! File::exists($directory)) {
             File::makeDirectory($directory, 0755, true);
@@ -482,6 +551,15 @@ public function create()
         }
 
         return $paths;
+    }
+
+    private function productImageStoragePath(?string $path): string
+    {
+        if ($path && str_starts_with($path, 'products/images/')) {
+            return public_path('product-images/'.Str::after($path, 'products/images/'));
+        }
+
+        return public_path((string) $path);
     }
 
     private function uniqueSlug($name, $ignoreId = null)

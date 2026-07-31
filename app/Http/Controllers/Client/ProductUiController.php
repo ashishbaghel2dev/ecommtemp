@@ -6,15 +6,87 @@ use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductLabel;
 use App\Models\Review;
 use App\Services\ProductPageService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Str;
 
 
 class ProductUiController extends Controller
 {
+    public function index(Request $request)
+    {
+        $priceExpression = $this->finalPriceExpression();
+
+        $productsQuery = Product::query()
+            ->active()
+            ->whereNotNull('slug')
+            ->with([
+                'category',
+                'images',
+                'labels',
+                'variants',
+                'attributeValues.attribute',
+                'attributeValues.attributeValue',
+            ])
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $search = $request->string('q')->toString();
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%")
+                        ->orWhere('short_description', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->when($request->filled('category'), fn ($query) => $query->where('category_id', (int) $request->category))
+            ->when($request->filled('min_price'), function ($query) use ($request, $priceExpression) {
+                $query->whereRaw("{$priceExpression} >= ?", [(float) $request->min_price]);
+            })
+            ->when($request->filled('max_price'), function ($query) use ($request, $priceExpression) {
+                $query->whereRaw("{$priceExpression} <= ?", [(float) $request->max_price]);
+            })
+            ->when($request->boolean('in_stock'), fn ($query) => $query->where('in_stock', true)->where('stock', '>', 0))
+            ->when($request->boolean('best_sellers'), function ($query) {
+                $query->whereHas('labels', fn ($labelQuery) => $labelQuery->where('slug', 'best-product'));
+            });
+
+        match ($request->input('sort', 'latest')) {
+            'name_asc' => $productsQuery->orderBy('name'),
+            'name_desc' => $productsQuery->orderByDesc('name'),
+            'price_low' => $productsQuery->orderByRaw($priceExpression . ' asc'),
+            'price_high' => $productsQuery->orderByRaw($priceExpression . ' desc'),
+            'popular' => $productsQuery->orderByDesc('view_count'),
+            default => $productsQuery->latest(),
+        };
+
+        $products = $productsQuery
+            ->paginate(12)
+            ->withQueryString();
+
+        $priceBounds = Product::query()
+            ->active()
+            ->selectRaw("MIN({$priceExpression}) as min_price, MAX({$priceExpression}) as max_price")
+            ->first();
+
+        $categories = Category::query()
+            ->active()
+            ->sorted()
+            ->get(['id', 'name', 'slug']);
+
+        return view('client.pages.products.index', [
+            'products' => $products,
+            'categories' => $categories,
+            'priceBounds' => $priceBounds,
+            'currentSort' => $request->input('sort', 'latest'),
+        ]);
+    }
+
     public function category(Category $category, Request $request)
     {
         abort_unless($category->is_active, 404);
@@ -141,6 +213,45 @@ class ProductUiController extends Controller
         return view('client.pages.products.show', $data);
     }
 
+    public function label(string $label)
+    {
+        $slug = $label;
+        $label = ProductLabel::query()
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->first();
+
+        $title = $label?->name ?? match ($slug) {
+            'new-arrived' => 'New Arrivals',
+            'best-product' => 'Bestsellers',
+            default => Str::headline($slug),
+        };
+
+        $products = $label
+            ? $label->products()
+                ->active()
+                ->whereNotNull('slug')
+                ->with([
+                    'category',
+                    'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
+                    'labels',
+                    'variants' => fn ($query) => $query->where('is_active', true),
+                    'attributeValues.attribute',
+                    'attributeValues.attributeValue',
+                ])
+                ->latest('products.created_at')
+                ->paginate(12)
+            : new LengthAwarePaginator([], 0, 12, LengthAwarePaginator::resolveCurrentPage(), [
+                'path' => request()->url(),
+            ]);
+
+        return view('client.pages.products.label', [
+            'label' => $label,
+            'labelTitle' => $title,
+            'products' => $products,
+        ]);
+    }
+
     private function getVisibleReviews(Product $product)
     {
         return Review::query()
@@ -168,7 +279,10 @@ class ProductUiController extends Controller
             ->active()
             ->whereIn('id', $ids)
             ->whereNotNull('slug')
-            ->with(['category'])
+            ->with([
+                'category',
+                'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
+            ])
             ->get()
             ->sortBy(fn ($item) => $ids->search($item->id))
             ->values();

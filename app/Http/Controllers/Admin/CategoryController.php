@@ -182,7 +182,7 @@ public function edit($id)
         ->with('success', 'Category Updated Successfully');
 }
 
-    // ❌ DELETE (CATEGORY + IMAGE DELETE)
+    // Move to trash. Files are removed only on permanent delete.
     public function destroy($id)
     {
         try {
@@ -194,19 +194,9 @@ public function edit($id)
                 return back()->with('error', 'Cannot delete category with children');
             }
 
-            // delete image
-            if ($category->image && file_exists(public_path($category->image))) {
-                unlink(public_path($category->image));
-            }
-
-            // delete banner
-            if ($category->banner && file_exists(public_path($category->banner))) {
-                unlink(public_path($category->banner));
-            }
-
             $category->delete();
 
-            return back()->with('success', 'Category Deleted Successfully');
+            return back()->with('success', 'Category moved to trash successfully');
 
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

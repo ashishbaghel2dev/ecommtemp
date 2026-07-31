@@ -23,13 +23,6 @@
                 @endif
             </div>
             <div>
-                <nav class="account-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('home') }}">Home</a>
-                    <i class="ti ti-chevron-right"></i>
-                    <a href="{{ route('dashboard') }}">Dashboard</a>
-                    <i class="ti ti-chevron-right"></i>
-                    <span>Profile</span>
-                </nav>
                 <h1>My Profile</h1>
                 <p>View your personal information, verification status and account activity.</p>
             </div>

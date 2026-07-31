@@ -1,9 +1,35 @@
 @extends('client.layouts.app')
 
 @section('title', $category->name . ' Products')
+@section('meta_description', $category->meta_description ?: \Illuminate\Support\Str::limit(strip_tags((string) $category->description), 155, ''))
+@section('canonical', route('categories.show', $category->slug))
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/client/pages/category-products.css') }}">
+@endpush
+
+@push('head')
+    @php
+        $categoryItems = $products->getCollection()->values()->map(fn ($product, $index) => [
+            '@type' => 'ListItem',
+            'position' => $products->firstItem() + $index,
+            'url' => route('products.show', $product->slug),
+            'name' => $product->name,
+        ])->all();
+    @endphp
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'CollectionPage',
+            'name' => $category->name,
+            'url' => route('categories.show', $category->slug),
+            'description' => strip_tags($category->description ?? ''),
+            'mainEntity' => [
+                '@type' => 'ItemList',
+                'itemListElement' => $categoryItems,
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
 @endpush
 
 @section('content')
@@ -12,23 +38,27 @@
     $maxBound = ceil((float) ($priceBounds->max_price ?? 0));
     $selectedIds = $selectedAttributeValues->all();
     $activeFilterCount = count($selectedIds) + (request()->filled('min_price') ? 1 : 0) + (request()->filled('max_price') ? 1 : 0) + (request()->boolean('in_stock') ? 1 : 0);
+    $heroImage = $category->banner ?: $category->image;
 @endphp
 
 <section class="category-products-page">
-    <header class="category-products-hero">
-        <div>
-            <nav class="category-products-breadcrumb" aria-label="Breadcrumb">
-                <a href="{{ route('home') }}">Home</a>
-                <i class="ti ti-chevron-right"></i>
-                <span>{{ $category->name }}</span>
-            </nav>
+    <header class="category-products-hero" >
+        <div class="category-hero-copy">
+            <span class="category-eyebrow">Pure Tea Collection</span>
             <h1>{{ $category->name }}</h1>
-            <p>{{ $category->description ?: 'Browse products, compare options, and narrow the list with useful filters.' }}</p>
+        
         </div>
 
-        <div class="category-products-summary">
-            <strong>{{ $products->total() }}</strong>
-            <span>Products found</span>
+        <div class="category-hero-side">
+            @if($category->image)
+                <img src="{{ asset($category->image) }}" alt="{{ $category->name }}">
+            @else
+                <i class="ti ti-leaf"></i>
+            @endif
+            <div class="category-products-summary">
+                <strong>{{ $products->total() }}</strong>
+                <span>Products found</span>
+            </div>
         </div>
     </header>
 
@@ -150,68 +180,103 @@
                     @foreach($products as $product)
                         @php
                             $image = $product->image ?: optional($product->images->first())->image ?: 'images/no-image.png';
+                            $hoverImage = optional($product->images->firstWhere('image', '!=', $image))->image
+                                ?: optional($product->images->skip(1)->first())->image;
                             $finalPrice = (float) $product->final_price;
                             $listPrice = max((float) $product->price, $finalPrice);
                             $discountPercent = $listPrice > $finalPrice ? round((($listPrice - $finalPrice) / $listPrice) * 100) : 0;
+                            $attributeGroups = $product->attributeValues
+                                ->filter(fn ($item) => $item->attribute && ($item->attributeValue || $item->value))
+                                ->groupBy('attribute_id');
+                            $variantPayload = $product->variants
+                                ->map(function ($variant) use ($product, $listPrice, $finalPrice) {
+                                    $variantListPrice = (float) ($variant->price ?? $listPrice);
+                                    $variantFinalPrice = (float) ($variant->sale_price ?: ($variant->price ?? $finalPrice));
+
+                                    return [
+                                        'id' => $variant->id,
+                                        'attributes' => collect($variant->attributes ?? [])
+                                            ->mapWithKeys(fn ($value, $key) => [(int) $key => (int) $value])
+                                            ->all(),
+                                        'list_price' => $variantListPrice,
+                                        'final_price' => $variantFinalPrice,
+                                        'in_stock' => (bool) $variant->in_stock,
+                                    ];
+                                })
+                                ->values();
+                            $pricingPayload = [
+                                'type' => $product->type,
+                                'base_list_price' => $listPrice,
+                                'base_final_price' => $finalPrice,
+                                'variants' => $variantPayload,
+                            ];
+                            $ingredientText = trim(strip_tags(html_entity_decode($product->short_description ?? $product->description ?? 'Herbal tea crafted for daily wellness.')));
+                            $ingredientText = preg_replace('/^\s*Ingredients\s*:?\s*/i', '', $ingredientText);
                         @endphp
 
-                        <article class="category-product-card">
-                            <a href="{{ route('products.show', $product->slug) }}" class="category-product-media">
-                                @if($product->labels->first())
-                                    <span>{{ $product->labels->first()->name }}</span>
+                        <article class="category-product-card"
+                                 data-category-product-card
+                                 data-pricing='@json($pricingPayload)'>
+                            <a href="{{ route('products.show', $product->slug) }}" class="category-product-media {{ $hoverImage ? 'has-hover-image' : '' }}">
+                                <img src="{{ asset($image) }}" alt="{{ $product->name }}" loading="lazy" class="product-card-image-primary">
+                                @if($hoverImage)
+                                    <img src="{{ asset($hoverImage) }}" alt="{{ $product->name }}" loading="lazy" class="product-card-image-hover">
                                 @endif
-                                <img src="{{ asset($image) }}" alt="{{ $product->name }}" loading="lazy">
                             </a>
 
                             <div class="category-product-info">
-                                <div class="category-product-meta">
-                                    <span>{{ $product->sku }}</span>
-                                    <span>{{ $product->stock > 0 && $product->in_stock ? 'In stock' : 'Out of stock' }}</span>
-                                </div>
-
                                 <a href="{{ route('products.show', $product->slug) }}" class="category-product-title">
                                     {{ $product->name }}
                                 </a>
 
-                                <p>{{ \Illuminate\Support\Str::limit($product->short_description ?? 'Reliable product for everyday use.', 92) }}</p>
+                                <p class="category-product-ingredients">
+                                    Ingredients : {{ \Illuminate\Support\Str::limit($ingredientText, 54) }}
+                                </p>
 
-                                @if($product->attributeValues->count())
-                                    <div class="category-product-options">
-                                        @foreach($product->attributeValues->take(4) as $productAttributeValue)
-                                            <span>{{ $productAttributeValue->attributeValue->value ?? $productAttributeValue->value ?? '-' }}</span>
+                                <div class="category-product-price">
+                                    <strong data-category-final-price>₹ {{ number_format($finalPrice, 2) }}</strong>
+                                    <del data-category-list-price {{ $discountPercent ? '' : 'hidden' }}>₹ {{ number_format($listPrice, 2) }}</del>
+                                </div>
+
+                                @if($attributeGroups->isNotEmpty())
+                                    <div class="category-product-size">
+                                        @foreach($attributeGroups as $attributeId => $values)
+                                            @php
+                                                $attribute = $values->first()->attribute;
+                                            @endphp
+                                            <div class="category-product-attribute" data-category-attribute-group data-attribute-id="{{ $attributeId }}">
+                                                <span>Select {{ $attribute->name }}:</span>
+                                                <div>
+                                                    @foreach($values->sortBy(fn ($item) => $item->attributeValue->sort_order ?? $item->id) as $productAttributeValue)
+                                                        <button type="button"
+                                                                data-size-option
+                                                                data-pav-id="{{ $productAttributeValue->id }}"
+                                                                data-attribute-id="{{ $attributeId }}"
+                                                                data-attribute-value-id="{{ $productAttributeValue->attribute_value_id }}"
+                                                                class="{{ $loop->first ? 'is-selected' : '' }}">
+                                                            {{ $productAttributeValue->attributeValue->value ?? $productAttributeValue->value }}
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
                                         @endforeach
                                     </div>
                                 @endif
+                            </div>
 
-                                <div class="category-product-footer">
-                                    <div>
-                                        @if($discountPercent)
-                                            <del>₹{{ number_format($listPrice, 2) }}</del>
-                                        @endif
-                                        <strong>₹{{ number_format($finalPrice, 2) }}</strong>
-                                    </div>
-
-                                    @if($discountPercent)
-                                        <span class="category-discount">{{ $discountPercent }}% OFF</span>
-                                    @endif
-                                </div>
-
-                                <div class="category-product-actions">
-                                    @if($product->attributeValues->isNotEmpty() || ($product->type === 'configurable' && $product->variants->isNotEmpty()))
-                                        <a href="{{ route('products.show', $product->slug) }}">
-                                            <i class="ti ti-eye"></i>
-                                            View
-                                        </a>
-                                    @else
-                                        <button type="button" data-add-to-cart="{{ $product->id }}">
-                                            <i class="ti ti-shopping-cart-plus"></i>
-                                            Add
-                                        </button>
-                                    @endif
-                                    <button type="button" data-wishlist="{{ $product->id }}" aria-label="Add {{ $product->name }} to wishlist">
-                                        <i class="ti ti-heart"></i>
+                            <div class="category-product-actions">
+                                @if($product->attributeValues->isNotEmpty() || ($product->type === 'configurable' && $product->variants->isNotEmpty()))
+                                    <a href="{{ route('products.show', $product->slug) }}">
+                                        ADD TO CART
+                                    </a>
+                                @else
+                                    <button type="button" data-add-to-cart="{{ $product->id }}">
+                                        ADD TO CART
                                     </button>
-                                </div>
+                                @endif
+                                <button type="button" data-wishlist="{{ $product->id }}" aria-label="Add {{ $product->name }} to wishlist">
+                                    <i class="ti ti-heart"></i>
+                                </button>
                             </div>
                         </article>
                     @endforeach
@@ -258,6 +323,98 @@
             filterPanel.classList.remove('is-open');
         });
 
+        const money = (value) => '₹ ' + Number(value || 0).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+
+        const normalizeMap = (map) => {
+            const normalized = {};
+
+            Object.keys(map || {})
+                .map((key) => parseInt(key, 10))
+                .filter(Number.isFinite)
+                .sort((a, b) => a - b)
+                .forEach((key) => {
+                    const value = parseInt(map[key], 10);
+                    if (Number.isFinite(value)) {
+                        normalized[key] = value;
+                    }
+                });
+
+            return JSON.stringify(normalized);
+        };
+
+        const readPricing = (card) => {
+            try {
+                return JSON.parse(card.dataset.pricing || '{}');
+            } catch (error) {
+                return {};
+            }
+        };
+
+        const selectedAttributeMap = (card) => {
+            const map = {};
+
+            card.querySelectorAll('[data-size-option].is-selected').forEach((button) => {
+                const attributeId = parseInt(button.dataset.attributeId, 10);
+                const attributeValueId = parseInt(button.dataset.attributeValueId, 10);
+
+                if (Number.isFinite(attributeId) && Number.isFinite(attributeValueId)) {
+                    map[attributeId] = attributeValueId;
+                }
+            });
+
+            return map;
+        };
+
+        const matchingVariant = (pricing, attributeMap, expectedGroupCount) => {
+            if (!pricing.variants?.length || Object.keys(attributeMap).length !== expectedGroupCount) {
+                return null;
+            }
+
+            const selected = normalizeMap(attributeMap);
+
+            return pricing.variants.find((variant) => normalizeMap(variant.attributes || {}) === selected) || null;
+        };
+
+        const updateCategoryCardPrice = (card) => {
+            const pricing = readPricing(card);
+            const groups = card.querySelectorAll('[data-category-attribute-group]');
+            const variant = matchingVariant(pricing, selectedAttributeMap(card), groups.length);
+            const finalEl = card.querySelector('[data-category-final-price]');
+            const listEl = card.querySelector('[data-category-list-price]');
+
+            let finalPrice = Number(pricing.base_final_price || 0);
+            let listPrice = Number(pricing.base_list_price || finalPrice);
+
+            if (variant) {
+                finalPrice = Number(variant.final_price || finalPrice);
+                listPrice = Number(variant.list_price || listPrice || finalPrice);
+            }
+
+            if (finalEl) {
+                finalEl.textContent = money(finalPrice);
+            }
+            if (listEl) {
+                listEl.textContent = money(listPrice);
+                listEl.hidden = !(listPrice > finalPrice);
+            }
+        };
+
+        document.querySelectorAll('[data-category-product-card]').forEach((card) => {
+            updateCategoryCardPrice(card);
+
+            card.querySelectorAll('[data-size-option]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    button.closest('[data-category-attribute-group]')?.querySelectorAll('[data-size-option]').forEach((item) => {
+                        item.classList.toggle('is-selected', item === button);
+                    });
+                    updateCategoryCardPrice(card);
+                });
+            });
+        });
+
         document.querySelectorAll('.option-filter-item input, .stock-filter input').forEach((input) => {
             input.addEventListener('change', () => form?.submit());
         });
@@ -283,7 +440,7 @@
                     window.setTimeout(() => {
                         button.disabled = false;
                         button.classList.remove('is-added');
-                        button.innerHTML = '<i class="ti ti-shopping-cart-plus"></i> Add';
+                        button.innerHTML = 'ADD TO CART';
                     }, 1400);
                 }
             });

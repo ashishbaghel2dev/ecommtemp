@@ -22,3 +22,20 @@
 .input-label{
     display: block;
 }
+
+.field-help{
+    display:block;
+    margin-top:6px;
+    color:#7a7374;
+    font-size:12px;
+    line-height:1.45;
+}
+
+.field-help code{
+    color:#7b2429;
+    background:#f8eeee;
+    border:1px solid #efd8d9;
+    border-radius:5px;
+    padding:1px 5px;
+    font-size:11px;
+}

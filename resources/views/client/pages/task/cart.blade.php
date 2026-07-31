@@ -4,6 +4,8 @@
     $cartItems = $cart->items ?? collect();
     $itemCount = (int) ($cart->total_quantity ?: $cartItems->sum('quantity'));
     $subtotal = (float) ($cart->subtotal ?: $cartItems->sum('subtotal'));
+    $productTotal = (float) $cartItems->sum(fn ($item) => (float) ($item->original_price ?: $item->price) * (int) $item->quantity);
+    $productDiscount = (float) $cartItems->sum('discount_amount');
     $grandTotal = (float) ($cart->grand_total ?: $subtotal);
 @endphp
 
@@ -18,7 +20,7 @@
         <section class="cart-shell">
             <div class="cart-head">
                 <div>
-                    <span>Shopping cart</span>
+                 
                     <h1>Your Cart</h1>
                 </div>
 
@@ -93,6 +95,9 @@
                                                 <del>Rs. {{ number_format((float) $item->original_price, 2) }}</del>
                                             @endif
                                             <strong>Rs. {{ number_format((float) $item->price, 2) }}</strong>
+                                            @if((float) $item->discount_amount > 0)
+                                                <span>You save Rs. {{ number_format((float) $item->discount_amount, 2) }}</span>
+                                            @endif
                                         </div>
 
                                         <div class="cart-quantity" aria-label="Quantity controls">
@@ -128,16 +133,28 @@
 
                     <dl>
                         <div>
+                            <dt>Product Total</dt>
+                            <dd>Rs. <span id="cart-product-total">{{ number_format($productTotal, 2) }}</span></dd>
+                        </div>
+                        <div>
+                            <dt>Product Discount</dt>
+                            <dd>- Rs. <span id="cart-product-discount">{{ number_format($productDiscount, 2) }}</span></dd>
+                        </div>
+                        <div>
                             <dt>Subtotal</dt>
                             <dd>Rs. <span id="cart-subtotal">{{ number_format($subtotal, 2) }}</span></dd>
                         </div>
                         <div>
-                            <dt>Shipping</dt>
-                            <dd>Calculated at checkout</dd>
+                            <dt>Coupon Discount</dt>
+                            <dd>- Rs. <span id="cart-discount">{{ number_format((float) ($cart->discount_total ?? 0), 2) }}</span></dd>
                         </div>
                         <div>
-                            <dt>Discount</dt>
-                            <dd>Rs. <span id="cart-discount">{{ number_format((float) ($cart->discount_total ?? 0), 2) }}</span></dd>
+                            <dt>Shipping</dt>
+                            <dd>Rs. <span id="cart-shipping">{{ number_format((float) ($cart->shipping_total ?? 0), 2) }}</span></dd>
+                        </div>
+                        <div>
+                            <dt>Tax</dt>
+                            <dd>Rs. <span id="cart-tax">{{ number_format((float) ($cart->tax_total ?? 0), 2) }}</span></dd>
                         </div>
                         <div class="cart-summary-total">
                             <dt>Total</dt>
@@ -145,11 +162,23 @@
                         </div>
                     </dl>
 
+                    <div class="cart-coupon">
+                        <label for="coupon-code">Coupon</label>
+                        <div>
+                            <input id="coupon-code" type="text" value="{{ $cart->coupon_code }}" placeholder="Enter coupon code">
+                            <button type="button" onclick="applyCoupon()">Apply</button>
+                        </div>
+                        @if($cart->coupon_code)
+                            <button type="button" class="cart-coupon-remove" onclick="removeCoupon()">Remove {{ $cart->coupon_code }}</button>
+                        @endif
+                        <p id="coupon-message"></p>
+                    </div>
+
                     <a href="{{ route('checkout.index') }}"
                             class="cart-checkout {{ $cartItems->isEmpty() ? 'disabled' : '' }}"
                             aria-disabled="{{ $cartItems->isEmpty() ? 'true' : 'false' }}">
                         <i class="ti ti-credit-card"></i>
-                        <span>Checkout</span>
+                        <span>Proceed to Checkout</span>
                     </a>
 
                     <button type="button"
@@ -193,9 +222,16 @@
             const total = cart?.grand_total ?? cart?.subtotal ?? 0;
             const subtotal = cart?.subtotal ?? total;
             const quantity = cart?.total_quantity ?? 0;
+            const productDiscount = cart?.product_discount_total ?? 0;
+            const productTotal = cart?.product_total ?? (Number(subtotal) + Number(productDiscount));
 
             document.getElementById('cart-total').innerText = money(total);
+            document.getElementById('cart-product-total').innerText = money(productTotal);
+            document.getElementById('cart-product-discount').innerText = money(productDiscount);
             document.getElementById('cart-subtotal').innerText = money(subtotal);
+            document.getElementById('cart-discount').innerText = money(cart?.discount_total ?? 0);
+            document.getElementById('cart-shipping').innerText = money(cart?.shipping_total ?? 0);
+            document.getElementById('cart-tax').innerText = money(cart?.tax_total ?? 0);
             document.querySelector('[data-cart-count]').innerText = `${quantity} ${Number(quantity) === 1 ? 'item' : 'items'}`;
 
             const navCount = document.querySelector('[data-navbar-cart-count]');
@@ -282,6 +318,30 @@
 
             renderEmptyCart();
             updateCartSummary(data.cart);
+        }
+
+        async function applyCoupon() {
+            const message = document.getElementById('coupon-message');
+            const data = await cartRequest('{{ route('coupon.apply') }}', {
+                method: 'POST',
+                body: JSON.stringify({ code: document.getElementById('coupon-code').value }),
+            });
+            message.innerText = data.message || '';
+            message.classList.toggle('is-error', !data.status);
+            if (data.cart) {
+                updateCartSummary(data.cart);
+            }
+        }
+
+        async function removeCoupon() {
+            const message = document.getElementById('coupon-message');
+            const data = await cartRequest('{{ route('coupon.remove') }}', { method: 'DELETE' });
+            message.innerText = data.message || '';
+            message.classList.toggle('is-error', !data.status);
+            document.getElementById('coupon-code').value = '';
+            if (data.cart) {
+                updateCartSummary(data.cart);
+            }
         }
     </script>
 @endpush

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700" role="img" aria-label="Power and chargers">
-  <rect width="900" height="700" fill="#fff1f2"/>
-  <rect x="255" y="145" width="390" height="390" rx="48" fill="#be123c"/>
-  <rect x="315" y="225" width="270" height="110" rx="28" fill="#fff7ed"/>
-  <circle cx="380" cy="280" r="20" fill="#111827"/>
-  <circle cx="520" cy="280" r="20" fill="#111827"/>
-  <path d="M470 355l-75 98h68l-34 87 90-120h-72z" fill="#facc15"/>
-  <text x="450" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#881337">POWER &amp; CHARGERS</text>
-</svg>

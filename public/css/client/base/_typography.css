@@ -1,7 +1,6 @@
 :root {
   /* Typography */
-  --font-main: 'Inter', sans-serif;
-  --font-logo: 'Playfair Display', serif; /* For that high-fashion logo feel */
+
   
   --font-size-xs: 10px;   /* Taglines */
   --font-size-sm: 12px;   /* Category links */

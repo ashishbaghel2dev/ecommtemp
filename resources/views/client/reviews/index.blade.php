@@ -11,7 +11,7 @@
         <section class="reviews-shell">
             <div class="reviews-head">
                 <div>
-                    <span>Customer feedback</span>
+        
                     <h1>Customer Reviews</h1>
                 </div>
 
@@ -61,8 +61,8 @@
                 @empty
                     <div class="reviews-empty">
                         <i class="ti ti-message-off"></i>
-                        <strong>No approved reviews yet</strong>
-                        <p>Approved customer reviews will appear here.</p>
+                        <strong>No reviews yet</strong>
+                        <p> customer reviews will appear here.</p>
                     </div>
                 @endforelse
             </div>

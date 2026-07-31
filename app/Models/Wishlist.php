@@ -9,11 +9,23 @@ class Wishlist extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'product_variant_id',
+        'attribute_signature',
+        'meta',
+    ];
+
+    protected $casts = [
+        'meta' => 'array',
     ];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
     public function user()

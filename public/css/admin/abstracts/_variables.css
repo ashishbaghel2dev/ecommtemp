@@ -13,3 +13,16 @@
   --font-size-base: 13px;
   
 }
+
+body[data-dashboard-theme="teal"] { --bg-primary: #16877d; --bg-primary-light: #d9f2ef; }
+body[data-dashboard-theme="navy"] { --bg-primary: #142f79; --bg-primary-light: #dbe5ff; }
+body[data-dashboard-theme="blue"] { --bg-primary: #2f66e8; --bg-primary-light: #dbe7ff; }
+body[data-dashboard-theme="violet"] { --bg-primary: #7c3aed; --bg-primary-light: #ede4ff; }
+body[data-dashboard-theme="magenta"] { --bg-primary: #c026d3; --bg-primary-light: #fae8ff; }
+body[data-dashboard-theme="rose"] { --bg-primary: #e11d48; --bg-primary-light: #ffe4ec; }
+body[data-dashboard-theme="red"] { --bg-primary: #dc2626; --bg-primary-light: #fee2e2; }
+body[data-dashboard-theme="orange"] { --bg-primary: #f97316; --bg-primary-light: #ffedd5; }
+body[data-dashboard-theme="gold"] { --bg-primary: #d79500; --bg-primary-light: #fef3c7; }
+body[data-dashboard-theme="green"] { --bg-primary: #16a34a; --bg-primary-light: #dcfce7; }
+body[data-dashboard-theme="cyan"] { --bg-primary: #0891b2; --bg-primary-light: #cffafe; }
+body[data-dashboard-theme="slate"] { --bg-primary: #475569; --bg-primary-light: #e2e8f0; }

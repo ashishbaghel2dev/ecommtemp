@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-label="Wedding jewellery offer banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbebf0"/>
+      <stop offset=".45" stop-color="#fff8e6"/>
+      <stop offset="1" stop-color="#7c2027"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="72%" cy="48%" r="45%">
+      <stop offset="0" stop-color="#fff" stop-opacity=".9"/>
+      <stop offset=".5" stop-color="#f2c86c" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="420" fill="url(#bg)"/>
+  <rect width="900" height="420" fill="url(#halo)"/>
+  <path d="M610 95h210l-35 72 35 72H610l35-72z" fill="#8b252b" opacity=".78"/>
+  <path d="M635 130h160M650 170h130M668 210h96" stroke="#fff4d0" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="715" cy="167" r="112" fill="none" stroke="#f3c46e" stroke-width="9" opacity=".9"/>
+  <path d="M0 0h900v48C690 2 520 45 350 62 205 76 100 50 0 92z" fill="#ffffff" opacity=".24"/>
+</svg>

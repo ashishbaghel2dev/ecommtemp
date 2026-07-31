@@ -1,13 +1,11 @@
-/* Abstracts */
-@import 'abstracts/_variables.css';
 
-/* Base */
 @import 'base/_reset.css';
 @import 'base/_typography.css';
 
 
 
-@import 'layout/navbar.css';
+@import 'layout/navbar.css'; 
+@import 'layout/breadcrumb.css';
 @import 'layout/footer.css';
 
 @import 'components/showcase-banner-carousel.css';
@@ -15,3 +13,29 @@
 @import 'components/why-choose.css';
 @import 'components/review-carousel.css';
 @import 'components/product-carousel.css';
+@import '../components/toast.css';
+
+@import 'pages/home-gosowa.css';
+@import 'pages/contact.css';
+@import 'pages/about.css';
+
+@media (max-width: 720px) {
+    main {
+        overflow-x: hidden;
+    }
+
+    img,
+    video {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .container,
+    .container-fluid {
+        max-width: 100%;
+    }
+
+    section {
+        scroll-margin-top: 84px;
+    }
+}

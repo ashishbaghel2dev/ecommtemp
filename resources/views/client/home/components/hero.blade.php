@@ -31,19 +31,32 @@
 
             <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
 
-                @if(!empty($banner->link))
-                    <a href="{{ $banner->link }}"
-                       target="_blank">
-                @endif
-
                 <!-- IMAGE -->
                 <img src="{{ asset($banner->image) }}"
                      class="d-block w-100"
                      alt="Banner {{ $banner->id }}"
                      loading="{{ $key == 0 ? 'eager' : 'lazy' }}">
 
-                @if(!empty($banner->link))
-                    </a>
+                @if($banner->eyebrow || $banner->title || $banner->subtitle || ($banner->link && $banner->button_text))
+                    <div class="home-slider-copy">
+                        @if($banner->eyebrow)
+                            <span>{{ $banner->eyebrow }}</span>
+                        @endif
+
+                        @if($banner->title)
+                            <h1>{{ $banner->title }}</h1>
+                        @endif
+
+                        @if($banner->subtitle)
+                            <p>{{ $banner->subtitle }}</p>
+                        @endif
+
+                        @if($banner->link && $banner->button_text)
+                            <a href="{{ $banner->link }}" @if(Str::startsWith($banner->link, ['http://', 'https://'])) target="_blank" rel="noopener" @endif>{{ $banner->button_text }}</a>
+                        @endif
+                    </div>
+                @elseif(!empty($banner->link))
+                    <a href="{{ $banner->link }}" class="home-slider-full-link" @if(Str::startsWith($banner->link, ['http://', 'https://'])) target="_blank" rel="noopener" @endif aria-label="Open banner link"></a>
                 @endif
 
             </div>

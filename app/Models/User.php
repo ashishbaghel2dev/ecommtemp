@@ -25,7 +25,8 @@ class User extends Authenticatable
         'avatar',
         'last_login_at',
         'last_login_ip',
-          'email_verified_at',
+        'email_verified_at',
+        'phone_verified_at',
     ];
 
     /**
@@ -99,6 +100,11 @@ public function activeCart()
 public function addresses()
 {
     return $this->hasMany(UserAddress::class);
+}
+
+public function orders()
+{
+    return $this->hasMany(Order::class);
 }
 
 

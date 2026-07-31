@@ -5,50 +5,34 @@ namespace App\Services;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Product;
-use App\Models\Review;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class ProductPageService
 {
     public function getProductPageData(Product $product): array
     {
-        $latestReviewUpdate = Review::query()
-            ->where('product_id', $product->id)
-            ->where('status', 'approved')
-            ->max('updated_at');
+        $loadedProduct = Product::query()
+            ->active()
+            ->with([
+                'category.parent',
+                'labels',
+                'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
+                'variants' => fn ($query) => $query->where('is_active', true),
+                'attributeValues.attribute',
+                'attributeValues.attributeValue',
+                'reviews' => fn ($query) => $query->where('status', 'approved')->latest()->take(6),
+                'reviews.user',
+                'reviews.images',
+            ])
+            ->findOrFail($product->id);
 
-        $cacheKey = sprintf(
-            'product_page.%s.%s.%s',
-            $product->id,
-            optional($product->updated_at)->timestamp ?? 'fresh',
-            $latestReviewUpdate ? strtotime($latestReviewUpdate) : 'no_reviews'
-        );
-
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($product) {
-            $loadedProduct = Product::query()
-                ->active()
-                ->with([
-                    'category.parent',
-                    'labels',
-                    'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
-                    'variants' => fn ($query) => $query->where('is_active', true),
-                    'attributeValues.attribute',
-                    'attributeValues.attributeValue',
-                    'reviews' => fn ($query) => $query->where('status', 'approved')->latest()->take(6),
-                    'reviews.user',
-                    'reviews.images',
-                ])
-                ->findOrFail($product->id);
-
-            return [
-                'product' => $loadedProduct,
-                'attributeGroups' => $this->getAttributeGroups($loadedProduct),
-                'variantAttributes' => $this->getVariantAttributes($loadedProduct),
-                'variantValues' => $this->getVariantValues($loadedProduct),
-                'relatedProducts' => $this->getRelatedProducts($loadedProduct),
-            ];
-        });
+        return [
+            'product' => $loadedProduct,
+            'attributeGroups' => $this->getAttributeGroups($loadedProduct),
+            'variantAttributes' => $this->getVariantAttributes($loadedProduct),
+            'variantValues' => $this->getVariantValues($loadedProduct),
+            'relatedProducts' => $this->getRelatedProducts($loadedProduct),
+        ];
     }
 
     private function getAttributeGroups(Product $product): Collection
@@ -109,7 +93,10 @@ class ProductPageService
             ->whereKeyNot($product->id)
             ->where('category_id', $product->category_id)
             ->whereNotNull('slug')
-            ->with(['category'])
+            ->with([
+                'category',
+                'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
+            ])
             ->latest()
             ->take(4)
             ->get();

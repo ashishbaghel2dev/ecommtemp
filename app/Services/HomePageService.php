@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Attribute;
 use App\Models\AttributeValue;
+use App\Models\AdminSetting;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\HomeCarouselImage;
@@ -12,6 +13,10 @@ use App\Models\ProductLabel;
 use App\Models\Review;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cookie;
+use App\Models\AboutPart;
+use App\Models\Blog;
+use App\Models\Faq;
+
 
 class HomePageService
 {
@@ -78,12 +83,17 @@ class HomePageService
             'variantAttributes' => $this->getVariantAttributes($variantAttributeIds),
             'variantValues'     => $this->getVariantValues($variantValueIds),
             'reviews'           => $this->getReviews(),
+          'aboutPart' => $this->getAboutPart(),
+           'faqs'              => $this->getFaqs(),
+             'blogs'                      => $this->getBlogs(),
             'homeSliders'       => $this->getHomeSliders(),
+            'offerBanners'       => $this->getOfferBanners(),
             'homeCategories'    => $this->getHomeCategories(),
             'labelProductCarousels' => $this->getLabelProductCarousels(),
             'categoryProductCarousels' => $this->getCategoryProductCarousels(),
             'featuredProductsPromoImage' => $this->getCarouselPromoImage('featured-products', 'products/images/featured-products.svg'),
             'recentlyViewed'    => $this->getRecentlyViewedProducts(),
+            'homePopup'         => AdminSetting::homePopupConfig(),
         ];
     }
 
@@ -108,8 +118,9 @@ class HomePageService
             })
             ->with([
                 'category',
+                'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
                 'labels',
-                'variants',
+                'variants' => fn ($query) => $query->where('is_active', true),
                 'attributeValues.attribute',
                 'attributeValues.attributeValue',
             ])
@@ -171,6 +182,51 @@ class HomePageService
             ->get();
     }
 
+  /*
+    |--------------------------------------------------------------------------
+    | About part
+    |--------------------------------------------------------------------------
+    */
+
+private function getAboutPart(): ?AboutPart
+{
+    return AboutPart::query()
+        ->where('status', true)
+        ->latest()
+        ->first();
+}
+/*
+|--------------------------------------------------------------------------
+| FAQs
+|--------------------------------------------------------------------------
+*/
+
+private function getFaqs(): Collection
+{
+    return Faq::query()
+        ->latest()
+        ->get();
+}
+
+  /*
+    |--------------------------------------------------------------------------
+    | Blog
+    |--------------------------------------------------------------------------
+    */
+
+
+
+private function getBlogs(): Collection
+{
+    return Blog::query()
+        ->where('status', true)
+        ->where('publish_status', 'posted')
+        ->latest()
+        ->take(6)
+        ->get();
+}
+
+
     /*
     |--------------------------------------------------------------------------
     | Home Sliders
@@ -183,6 +239,16 @@ class HomePageService
             ->where('is_active', 1)
             ->where('position', 'home_slider')
             ->orderBy('priority', 'asc')
+            ->get();
+    }
+
+    private function getOfferBanners(): Collection
+    {
+        return Banner::query()
+            ->where('is_active', 1)
+            ->where('position', 'offer_banner')
+            ->orderBy('priority', 'asc')
+            ->take(4)
             ->get();
     }
 
@@ -262,8 +328,9 @@ class HomePageService
             ->active()
             ->with([
                 'category',
+                'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
                 'labels',
-                'variants',
+                'variants' => fn ($query) => $query->where('is_active', true),
                 'attributeValues.attribute',
                 'attributeValues.attributeValue',
             ])
@@ -306,6 +373,7 @@ class HomePageService
             ->whereIn('id', $recentlyViewedIds)
             ->with([
                 'category',
+                'images' => fn ($query) => $query->orderByDesc('is_main')->orderBy('sort_order'),
                 'labels',
                 'variants',
             ])

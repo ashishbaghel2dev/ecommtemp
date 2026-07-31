@@ -1,26 +1,38 @@
+@php
+    $adminAppName = $adminSettings['app_name'] ?? 'Go Sowa';
+    $adminSubtitle = $adminSettings['admin_subtitle'] ?? 'Go Sowa Admin';
+    $dashboardLabel = $adminSettings['dashboard_label'] ?? 'Admin Dashboard';
+    $adminLogoPath = $adminSettings['site_logo_path'] ?? '';
+    $appInitials = collect(explode(' ', $adminAppName))->filter()->map(fn ($part) => strtoupper(substr($part, 0, 1)))->take(2)->implode('');
+@endphp
+
 <div class="dashboard-sidebar" id="sidebar">
 
-
     <div class="app-sidebar-logo">
-        <a href="/" class="logo-text">
-            <h2>EcommTemp</h2>
+        <a href="{{ route('admin.dashboard') }}" class="logo-text">
+            <span class="admin-brand-mark">
+                @if($adminLogoPath)
+                    <img src="{{ asset($adminLogoPath) }}" alt="{{ $adminAppName }} logo">
+                @else
+                    {{ $appInitials ?: 'GS' }}
+                @endif
+            </span>
+            <span class="admin-brand-copy">
+                <strong>{{ $adminAppName }}</strong>
+                <small>{{ $adminSubtitle }}</small>
+            </span>
         </a>
     </div>
 
 
     <ul class="dashboard-menu">
 
-        <li class="side-menu {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <a href="{{ route('dashboard') }}">
+        <li class="side-menu {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}">
                 <i class="menu-icon ti ti-layout-dashboard"></i>
 
-                <span class="menu-text">Dashboard</span>
+                <span class="menu-text">{{ $dashboardLabel }}</span>
             </a>
-
-            <ul class="side-sub-menu">
-                <li><a href="#">Overview</a></li>
-                <li><a href="#">Analytics</a></li>
-            </ul>
         </li>
 
         <li class="side-menu {{ request()->routeIs('sales.*') ? 'active' : '' }}">
@@ -30,8 +42,9 @@
             </a>
 
             <ul class="side-sub-menu">
-                <li><a href="#">Overview</a></li>
-                <li><a href="#">Analytics</a></li>
+                <li><a href="{{ route('sales.index') }}">Orders</a></li>
+                <li><a href="{{ route('sales.items') }}">Order Items</a></li>
+                <li><a href="{{ route('sales.customers') }}">Customers</a></li>
             </ul>
         </li>
         <li class="side-menu {{ request()->routeIs('products.*', 'categories.*', 'attributes.*', 'attribute-values.*', 'productlabels.*') ? 'active' : '' }}">
@@ -55,58 +68,61 @@
             </a>
             <ul class="side-sub-menu">
                 <li><a href="{{ route('users.index') }}">Active Users</a></li>
-                <li><a href="{{ route('wishlists.index') }}">Whishlist</a></li>
-                <li><a href="#">Analytics</a></li>
+                <li><a href="{{ route('sales.customers') }}">Customer History</a></li>
+                <li><a href="{{ route('wishlists.index') }}">Wishlist</a></li>
             </ul>
         </li>
-        <li class="side-menu {{ request()->routeIs('banners.*', 'home-carousel-images.*', 'social-links.*', 'admin.reviews.*') ? 'active' : '' }}">
+        <li class="side-menu {{ request()->routeIs('banners.*', 'home-carousel-images.*', 'home-popup.*', 'social-links.*', 'admin.reviews.*', 'about-parts.*', 'gallery.*', 'faqs.*', 'blogs.*', 'tags.*', 'inquiries.*') ? 'active' : '' }}">
             <a href="javascript:void(0)">
                 <i class="menu-icon ti ti-clipboard-check"></i>
                 <span class="menu-text">CMS</span>
             </a>
 
             <ul class="side-sub-menu">
-                <li><a href="#">Overview</a></li>
                 <li><a href="{{ route('banners.index') }}">Banners</a></li>
                 <li><a href="{{ route('home-carousel-images.index') }}">Carousel Images</a></li>
+                <li><a href="{{ route('home-popup.edit') }}">Home Popup</a></li>
                 <li><a href="{{ route('social-links.index') }}">Social Links</a></li>
                 <li><a href="{{ url('/admin/dashboard/reviews') }}">Review Requests</a></li>
+                <li><a href="{{ route('about-parts.index') }}">About Parts</a></li>
+                <li><a href="{{ route('gallery.index') }}">Gallery</a></li>
+                <li><a href="{{ route('faqs.index') }}">FAQ</a></li>
+                <li><a href="{{ route('blogs.index') }}">Blogs</a></li>
+                <li><a href="{{ route('tags.index') }}">Tags</a></li>
+                <li><a href="{{ route('inquiries.index') }}">Inquiries</a></li>
             
             </ul>
         </li>
-          <li class="side-menu {{ request()->routeIs('#') ? 'active' : '' }}">
-            <a href="javascript:void(0)">
-                <i class="menu-icon ti ti-clipboard-check"></i>
-                <span class="menu-text">CMS Pages</span>
-            </a>
 
-            <ul class="side-sub-menu">
-                 <li><a href="#">Overview</a></li>
-            </ul>
-        </li>
-
-
-        <li class="side-menu {{ request()->routeIs('marketing.*') ? 'active' : '' }}">
+        <li class="side-menu {{ request()->routeIs('marketing.*', 'coupons.*') ? 'active' : '' }}">
             <a href="javascript:void(0)">
                 <i class="menu-icon ti ti-chart-bar-popular"></i>
                 <span class="menu-text">Marketing</span>
             </a>
 
             <ul class="side-sub-menu">
-                <li><a href="#">Overview</a></li>
-                <li><a href="#">Analytics</a></li>
+                <li><a href="{{ route('coupons.index') }}">Coupons</a></li>
             </ul>
         </li>
-
-        <li class="side-menu {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+        <li class="side-menu {{ request()->routeIs('trash.*') ? 'active' : '' }}">
             <a href="javascript:void(0)">
-                <i class="menu-icon ti ti-chart-dots"></i>
-                <span class="menu-text">Reports</span>
+                <i class="menu-icon ti ti-trash"></i>
+                <span class="menu-text">Trash</span>
             </a>
 
             <ul class="side-sub-menu">
-                <li><a href="#">Overview</a></li>
-                <li><a href="#">Analytics</a></li>
+                <li><a href="{{ route('trash.index', 'blogs') }}">Blogs Trash</a></li>
+                <li><a href="{{ route('trash.index', 'faqs') }}">FAQ Trash</a></li>
+                <li><a href="{{ route('trash.index', 'gallery') }}">Gallery Trash</a></li>
+                <li><a href="{{ route('trash.index', 'tags') }}">Tags Trash</a></li>
+                <li><a href="{{ route('trash.index', 'inquiries') }}">Inquiry Trash</a></li>
+                <li><a href="{{ route('trash.index', 'about-parts') }}">About Parts Trash</a></li>
+                <li><a href="{{ route('trash.index', 'banners') }}">Banners Trash</a></li>
+                <li><a href="{{ route('trash.index', 'social-links') }}">Social Links Trash</a></li>
+                <li><a href="{{ route('trash.index', 'products') }}">Products Trash</a></li>
+                <li><a href="{{ route('trash.index', 'attributes') }}">Attributes Trash</a></li>
+                <li><a href="{{ route('trash.index', 'attribute-values') }}">Attribute Values Trash</a></li>
+                <li><a href="{{ route('trash.index', 'categories') }}">Categories Trash</a></li>
             </ul>
         </li>
         <li class="side-menu {{ request()->routeIs('settings.*') ? 'active' : '' }}">
@@ -116,20 +132,10 @@
             </a>
 
             <ul class="side-sub-menu">
-                <li><a href="#">Overview</a></li>
-                <li><a href="#">Analytics</a></li>
-            </ul>
-        </li>
-
-        <li class="side-menu {{ request()->routeIs('configuration.*') ? 'active' : '' }}">
-            <a href="javascript:void(0)">
-                <i class="menu-icon ti ti-tool"></i>
-                <span class="menu-text">Configuration</span>
-            </a>
-
-            <ul class="side-sub-menu">
-                <li><a href="#">Overview</a></li>
-                <li><a href="#">Analytics</a></li>
+                <li><a href="{{ route('settings.general') }}">General</a></li>
+                <li><a href="{{ route('settings.theme') }}">Theme</a></li>
+                <li><a href="{{ route('settings.costs') }}">Charges</a></li>
+                <li><a href="{{ route('settings.search') }}">Search Console</a></li>
             </ul>
         </li>
 

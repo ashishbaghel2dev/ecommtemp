@@ -3,37 +3,23 @@
 @section('title', 'Login')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/client/pages/auth.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/client/pages/auth.css') }}?v=20260730-auth4">
 @endpush
 
 @section('content')
-<section class="auth-page">
-    <div class="auth-shell">
-        <div class="auth-panel auth-copy">
-            <span class="auth-kicker">Computer Shop Account</span>
-            <h1>Welcome back</h1>
-            <p>Sign in to access your dashboard, wishlist, cart, reviews, and saved account details without leaving the store experience.</p>
+@php($redirectTo = request('redirect') === 'checkout' ? 'checkout' : old('redirect_to'))
 
-            <div class="auth-benefits">
-                <div>
-                    <i class="ti ti-shopping-cart"></i>
-                    <span>Cart sync</span>
-                </div>
-                <div>
-                    <i class="ti ti-heart"></i>
-                    <span>Wishlist</span>
-                </div>
-                <div>
-                    <i class="ti ti-user-check"></i>
-                    <span>Profile</span>
-                </div>
-            </div>
+<section class="auth-page tanvi-auth">
+    <div class="auth-shell">
+        <div class="auth-panel auth-copy tanvi-copy">
+            <h1>Login to Tanvi Fashion Jewellery</h1>
+            <p>Use your email address, 10-digit mobile number, or continue securely with Google.</p>
         </div>
 
-        <div class="auth-panel auth-form-panel">
+        <div class="auth-panel auth-form-panel tanvi-card">
             <div class="auth-form-head">
-                <span>Login</span>
-                <h2>Continue to your account</h2>
+                <h2>Login</h2>
+                <p>Email password, mobile password, or Google account only.</p>
             </div>
 
             @if(session('success'))
@@ -41,18 +27,21 @@
             @endif
 
             @if ($errors->any())
-                <div class="auth-alert error">
-                    {{ $errors->first() }}
-                </div>
+                <div class="auth-alert error">{{ $errors->first() }}</div>
             @endif
 
             <form action="{{ route('login') }}" method="POST" class="auth-form">
                 @csrf
-                @method('post')
+                <input type="hidden" name="redirect_to" value="{{ $redirectTo }}">
 
                 <label class="auth-field">
-                    <span>Email Address</span>
-                    <input type="email" name="email" placeholder="ashish@example.com" required value="{{ old('email') }}">
+                    <span>Email or 10-digit Mobile Number</span>
+                    <input type="text"
+                           name="login"
+                           inputmode="email"
+                           placeholder="you@example.com or 9876543210"
+                           value="{{ old('login') }}"
+                           required>
                 </label>
 
                 <label class="auth-field">
@@ -60,25 +49,39 @@
                     <input type="password" name="password" placeholder="Enter your password" required>
                 </label>
 
+                <div class="auth-form-link-row">
+                    <a href="{{ route('password.request') }}">Forgot password?</a>
+                </div>
+
                 <button type="submit" class="auth-primary-btn">
                     <i class="ti ti-login-2"></i>
                     Login
                 </button>
             </form>
 
-            <div class="auth-separator">
-                <span>or</span>
-            </div>
+            <div class="auth-separator"><span>or</span></div>
 
-            <a href="{{ route('auth.google') }}" class="auth-google-btn">
+            <a href="{{ route('auth.google', array_filter(['redirect' => $redirectTo])) }}" class="auth-google-btn">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="">
                 Continue with Google
             </a>
 
-            <p class="auth-footer-text">
-                Don't have an account? <a href="{{ route('register') }}">Create one</a>
+            <p class="auth-footer-text mt-3">
+                First time here? Create an account with email/mobile password or continue with Google.
+                <a href="{{ route('register', array_filter(['redirect' => $redirectTo])) }}">Create Account</a>
             </p>
         </div>
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelector('input[name="login"]')?.addEventListener('input', (event) => {
+        const value = event.currentTarget.value;
+        if (!value.includes('@') && /^[\d\s()+-]*$/.test(value)) {
+            event.currentTarget.value = value.replace(/\D/g, '').slice(0, 10);
+        }
+    });
+</script>
+@endpush

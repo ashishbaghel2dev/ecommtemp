@@ -1,0 +1,112 @@
+.site-breadcrumb-wrap {
+    position: relative;
+    isolation: isolate;
+    min-height: clamp(104px, 13vw, 150px);
+    display: flex;
+    align-items: center;
+    padding: clamp(20px, 3vw, 34px) 0;
+    overflow: hidden;
+    background:
+        linear-gradient(105deg, rgba(58, 22, 25, .88), rgba(139, 37, 43, .58) 46%, rgba(255, 250, 248, .18)),
+        var(--breadcrumb-image, url('/banners/1785252221_banner_fb-desktop-2-7-26.webp')) center / cover no-repeat;
+}
+
+.site-breadcrumb-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .12));
+    pointer-events: none;
+}
+
+.site-breadcrumb-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 78px;
+    color: #ffffff;
+}
+
+.site-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    color: rgba(255, 255, 255, .78);
+    font-size: 12px;
+    line-height: 1.35;
+    margin-bottom: 7px;
+}
+
+.site-breadcrumb a {
+    color: #fff2f2;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.site-breadcrumb a:hover,
+.site-breadcrumb a:focus {
+    color: #ffffff;
+}
+
+.site-breadcrumb i {
+    color: rgba(255, 255, 255, .54);
+    font-size: 13px;
+}
+
+.site-breadcrumb span[aria-current="page"] {
+    color: rgba(255, 255, 255, .88);
+}
+
+.site-breadcrumb-card h1 {
+    margin: 0;
+    max-width: 820px;
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(24px, 3vw, 38px);
+    line-height: 1.08;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-shadow: 0 2px 14px rgba(45, 14, 18, .28);
+}
+
+.site-breadcrumb-icon {
+    width: clamp(44px, 5vw, 58px);
+    height: clamp(44px, 5vw, 58px);
+    flex: 0 0 clamp(44px, 5vw, 58px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    background: rgba(255, 255, 255, .16);
+    color: #ffffff;
+    font-size: clamp(22px, 3vw, 30px);
+    backdrop-filter: blur(8px);
+}
+
+@media (max-width: 640px) {
+    .site-breadcrumb-wrap {
+        min-height: 104px;
+        padding: 20px 0;
+    }
+
+    .site-breadcrumb-card {
+        min-height: auto;
+        align-items: flex-start;
+    }
+
+    .site-breadcrumb-icon {
+        display: none;
+    }
+
+    .site-breadcrumb {
+        font-size: 11px;
+    }
+
+    .site-breadcrumb-card h1 {
+        font-size: clamp(22px, 8vw, 32px);
+    }
+}

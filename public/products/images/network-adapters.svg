@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700" role="img" aria-label="Network adapters">
-  <rect width="900" height="700" fill="#edfdf5"/>
-  <rect x="365" y="315" width="170" height="170" rx="28" fill="#065f46"/>
-  <rect x="395" y="485" width="110" height="62" rx="18" fill="#111827"/>
-  <path d="M300 270c82-82 218-82 300 0M235 205c118-118 312-118 430 0M170 140c154-154 406-154 560 0" fill="none" stroke="#10b981" stroke-width="28" stroke-linecap="round"/>
-  <circle cx="450" cy="400" r="36" fill="#fbbf24"/>
-  <text x="450" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#064e3b">NETWORK ADAPTERS</text>
-</svg>

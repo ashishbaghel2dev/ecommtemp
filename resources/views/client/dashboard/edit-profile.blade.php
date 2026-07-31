@@ -10,15 +10,6 @@
 <section class="account-dashboard-page">
     <header class="account-hero">
         <div>
-            <nav class="account-breadcrumb" aria-label="Breadcrumb">
-                <a href="{{ route('home') }}">Home</a>
-                <i class="ti ti-chevron-right"></i>
-                <a href="{{ route('dashboard') }}">Dashboard</a>
-                <i class="ti ti-chevron-right"></i>
-                <a href="{{ route('dashboard.profile') }}">Profile</a>
-                <i class="ti ti-chevron-right"></i>
-                <span>Edit</span>
-            </nav>
             <h1>Edit Profile</h1>
             <p>Update your personal details. After saving, you will return to your profile page.</p>
         </div>

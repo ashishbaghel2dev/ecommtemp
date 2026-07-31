@@ -1,384 +1,338 @@
-<!-- Tabler Icons CDN -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+@php
+    $navCategories = $navCategories ?? collect();
+    $navSocialLinks = $navSocialLinks ?? collect();
+    $navBestsellers = $navBestsellers ?? collect();
+    $navAllProducts = $navAllProducts ?? collect();
+    $navCarouselImage = $navCarouselImage ?? null;
+    $siteLogoPath = $siteSettings['site_logo_path'] ?? '';
+    $siteName = $siteSettings['user_app_name'] ?? 'Tanvi Fashion Jewellery';
+    $brandDisplayName = 'Tanvi Fashion Jewellery';
+    $logoFallbackPath = 'uploads/site/1785248312_logo.png';
+    $navFeatureImage = $navCarouselImage?->image ?: 'uploads/site/1785248312_logo.png';
+    $navFeatureTitle = $navCarouselImage?->title ?: 'Fresh jewellery picks from Tanvi';
+    $jewelleryMenu = [
+        ['label' => 'All Jewellery', 'icon' => 'ti ti-sparkles', 'dropdown' => true],
+        ['label' => 'Gold', 'icon' => 'ti ti-diamond', 'dropdown' => true],
+        ['label' => 'Diamond', 'icon' => 'ti ti-diamond'],
+        ['label' => 'Earrings', 'icon' => 'ti ti-ear'],
+        ['label' => 'Rings', 'icon' => 'ti ti-circle-dot'],
+        ['label' => 'Daily Wear', 'icon' => 'ti ti-sparkles'],
+        ['label' => 'Gemstone', 'icon' => 'ti ti-rosette'],
+        ['label' => 'Wedding', 'icon' => 'ti ti-heart-handshake'],
+        ['label' => 'Gifting', 'icon' => 'ti ti-gift'],
+        ['label' => 'More', 'icon' => 'ti ti-pi'],
+    ];
 
-<nav class="main-nav">
+    
+    $fallbackSocials = collect([
+        ['name' => 'Facebook', 'url' => '#', 'icon' => 'ti ti-brand-facebook'],
+        ['name' => 'Instagram', 'url' => '#', 'icon' => 'ti ti-brand-instagram'],
+        ['name' => 'YouTube', 'url' => '#', 'icon' => 'ti ti-brand-youtube'],
+    ]);
 
-   <div class="top-bar">
-    <p>Best Computer shop in Noida city</p>
-   </div>
-    <div class="top-header">
+    $companyLinks = [
+        ['label' => 'About Us', 'url' =>  route('about')],
+        ['label' => 'FAQ', 'url' => route('client.faqs.index')],
+        ['label' => 'Gallery', 'url' => route('client.gallery.index')],
+        ['label' => 'Reviews', 'url' => route('reviews.index')],
+          ['label' => 'Blog', 'url' => '/blog'],
+    ];
 
-        <a href="{{ route('home') }}" class="logo" aria-label="Computer Shop home">
-            <img src="{{ asset('asset/logo.svg') }}" alt="Computer Shop Logo">
-        </a>
+    $navbarSearchQuery = request('q', '');
 
-        <form class="search-container" action="{{ route('home') }}" method="GET">
+    $socialIconMap = [
+        'facebook' => 'ti ti-brand-facebook',
+        'instagram' => 'ti ti-brand-instagram',
+        'youtube' => 'ti ti-brand-youtube',
+        'twitter' => 'ti ti-brand-x',
+        'x' => 'ti ti-brand-x',
+        'linkedin' => 'ti ti-brand-linkedin',
+        'pinterest' => 'ti ti-brand-pinterest',
+        'whatsapp' => 'ti ti-brand-whatsapp',
+    ];
+@endphp
 
-            <input type="search" name="q" value="{{ request('q') }}" placeholder="Search for products..." aria-label="Search products">
-
-            <button type="submit" aria-label="Search"><i class="ti ti-search"></i></button>
-
-        </form>
-
-        <div class="header-actions">
-
-            <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="action-item">
-                <i class="ti ti-user"></i>
-                <div>
-                    <span>{{ auth()->check() ? 'My' : 'Login' }}</span>
-                    <strong>{{ auth()->check() ? 'Dashboard' : 'Account' }}</strong>
-                </div>
-            </a>
-
-            <a href="{{ route('wishlist.index') }}" class="nav-icon-link" aria-label="View wishlist">
-            <div class="icon-box">
-                <i class="ti ti-heart"></i>
-                    <span data-navbar-wishlist-count>{{ $navWishlistCount ?? 0 }}</span>
+<nav class="main-nav" aria-label="Main navigation">
+    <div class="top-bar">
+        <div class="topbar-marquee" aria-label="Store announcements">
+            <div>
+                <span>Announcement: New handcrafted jewellery collections are live.</span>
+                <span>Free shipping on selected festive picks.</span>
+                <span>Secure checkout with wishlist and cart saved for you.</span>
+                <span>Announcement: New handcrafted jewellery collections are live.</span>
             </div>
-            </a>
+        </div>
+    </div>
 
-            <a href="{{ route('cart.index') }}" class="action-item2">
-                <div class="icon-box">
-                    <i class="ti ti-shopping-cart"></i>
-                    <span data-navbar-cart-count>{{ $navCartCount ?? 0 }}</span>
-                </div>
-                <div class="cart-info">
-                    <span>Your Cart</span>
-                    <strong>Rs. <b data-navbar-cart-total>{{ number_format((float) ($navCartTotal ?? 0), 2) }}</b></strong>
-                </div>
-            </a>
-
+    <div class="top-header">
+        <div class="header-search-wrap">
+            <form action="{{ route('client.products.index') }}" method="GET" class="header-search-form" role="search">
+                <label for="navbarSearchInput">Search Tanvi products</label>
+                <i class="ti ti-search"></i>
+                <input id="navbarSearchInput" type="search" name="q" value="{{ $navbarSearchQuery }}" placeholder="Search for diamond jewellery">
+                <button type="submit">Search</button>
+                
+            </form>
         </div>
 
+        <div class="logo-box">
+            <a href="{{ route('home') }}" class="logo" aria-label="{{ $brandDisplayName }} home">
+                <img src="{{ asset($siteLogoPath ?: $logoFallbackPath) }}" alt="{{ $brandDisplayName }} Logo">
+                <span>{{ $brandDisplayName }}</span>
+            </a>
+        </div>
+
+        <div class="header-actions">
+            <a href="{{ route('client.products.index') }}" class="header-icon-card" aria-label="Explore jewellery">
+                <i class="ti ti-diamond"></i>
+                <span>Jewellery</span>
+            </a>
+
+            <a href="{{ route('client.gallery.index') }}" class="header-icon-card" aria-label="Visit store gallery">
+                <i class="ti ti-building-store"></i>
+                <span>Store</span>
+            </a>
+
+            <a href="{{ route('wishlist.index') }}" class="header-icon-card" aria-label="View wishlist">
+                <div class="icon-box">
+                    <i class="ti ti-heart"></i>
+                    <span data-navbar-wishlist-count>{{ $navWishlistCount ?? 0 }}</span>
+                </div>
+                <span>Wishlist</span>
+            </a>
+
+            <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="header-icon-card" aria-label="{{ auth()->check() ? 'Open dashboard' : 'Login account' }}">
+                <i class="ti ti-user"></i>
+                <span>{{ auth()->check() ? 'Profile' : 'Login' }}</span>
+            </a>
+
+            <a href="{{ route('cart.index') }}" class="header-icon-card header-cart-card" aria-label="View cart">
+                <div class="icon-box">
+                    <i class="ti ti-shopping-bag"></i>
+                    <span data-navbar-cart-count>{{ $navCartCount ?? 0 }}</span>
+                </div>
+                <span>Cart</span>
+            </a>
+        </div>
+
+        <div class="mobile-header-actions" aria-label="Mobile quick actions">
+            <a href="{{ route('client.products.index') }}#productSearch" class="mobile-nav-icon" aria-label="Search products">
+                <i class="ti ti-search"></i>
+            </a>
+
+            <a href="{{ route('wishlist.index') }}" class="mobile-nav-icon" aria-label="View wishlist">
+                <i class="ti ti-heart"></i>
+                <span data-navbar-wishlist-count>{{ $navWishlistCount ?? 0 }}</span>
+            </a>
+
+            <a href="{{ route('cart.index') }}" class="mobile-nav-icon" aria-label="View cart">
+                <i class="ti ti-shopping-cart"></i>
+                <span data-navbar-cart-count>{{ $navCartCount ?? 0 }}</span>
+            </a>
+
+            <button type="button" class="mobile-menu-toggle" aria-label="Open menu" aria-controls="mobileNavDrawer" aria-expanded="false">
+                <i class="ti ti-menu-2"></i>
+            </button>
+        </div>
     </div>
 
     <div class="menu-header">
-
-        <button type="button" class="browse" data-category-drawer-open aria-controls="categoryDrawer" aria-expanded="false">
-            <i class="ti ti-menu-2"></i>
-            <strong>Browse All Categories</strong>
-        </button>
-
         <ul class="main-menu">
-            <li><a href="{{ route('home') }}">Home</a></li>
-            <li class="has-mega-menu">
-                <a href="#">Gaming <i class="ti ti-chevron-down"></i></a>
-                <div class="mega-menu">
-                    <div class="mega-menu-inner">
-                        <div class="mega-menu-feature">
-                            <span>Gaming</span>
-                            <strong>High FPS gear</strong>
-                            <p>Build-ready parts, fast displays, and accessories for competitive setups.</p>
+            @foreach($jewelleryMenu as $menuItem)
+                <li class="{{ !empty($menuItem['dropdown']) ? 'has-dropdown has-category-dropdown' : '' }}">
+                    <a href="{{ route('client.products.index') }}" @if(!empty($menuItem['dropdown'])) aria-haspopup="true" aria-expanded="false" @endif>
+                        <i class="{{ $menuItem['icon'] }}"></i>
+                        <span>{{ $menuItem['label'] }}</span>
+                    </a>
+
+                    @if(!empty($menuItem['dropdown']))
+                        <div class="nav-dropdown nav-dropdown-categories">
+                            <div class="mega-menu-grid">
+                                <aside class="mega-filter-rail">
+                                    <a href="{{ route('client.products.index') }}" class="is-active">Category</a>
+                                    <a href="{{ route('client.products.index') }}">Price</a>
+                                    <a href="{{ route('client.products.index') }}">Occasion</a>
+                                    <a href="{{ route('client.products.index') }}">Gold Coin</a>
+                                    <a href="{{ route('client.products.index') }}">Men</a>
+                                    <a href="{{ route('client.products.index') }}">Metal</a>
+                                </aside>
+
+                                <div class="mega-category-panel">
+                                    @forelse($navCategories->take(3) as $category)
+                                        <div class="category-menu-column">
+                                            <div class="category-menu-links">
+                                                <a href="{{ route('categories.show', $category->slug) }}">
+                                                    <span class="mega-link-icon">
+                                                        <i class="{{ $menuItem['icon'] }}"></i>
+                                                    </span>
+                                                    <strong>All {{ $category->name }}</strong>
+                                                </a>
+
+                                                @foreach($category->children->take(3) as $child)
+                                                    <a href="{{ route('categories.show', $child->slug) }}">
+                                                        <span class="mega-link-icon"><i class="ti ti-sparkles"></i></span>
+                                                        <strong>{{ $child->name }}</strong>
+                                                    </a>
+                                                @endforeach
+
+                                                @foreach($category->products->take(3) as $product)
+                                                    <a href="{{ route('products.show', $product->slug) }}">
+                                                        <span class="mega-link-icon"><i class="ti ti-diamond"></i></span>
+                                                        <strong>{{ $product->name }}</strong>
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="category-menu-column">
+                                            <div class="category-menu-links">
+                                                <span>
+                                                    <span class="mega-link-icon"><i class="ti ti-diamond"></i></span>
+                                                    <strong>No categories found.</strong>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endforelse
+
+                                    <div class="mega-view-all">
+                                        <span>
+                                            <img src="{{ asset($navFeatureImage) }}" alt="">
+                                        </span>
+                                        <div>
+                                            <strong>From Classic to Contemporary.</strong>
+                                            <small>Explore 6000+ stunning designs.</small>
+                                        </div>
+                                        <a href="{{ route('client.products.index') }}">View All</a>
+                                    </div>
+                                </div>
+
+                                <aside class="category-menu-feature">
+                                    <a href="{{ route('client.products.index') }}" class="mega-feature-card">
+                                        <img src="{{ asset($navFeatureImage) }}" alt="{{ $navFeatureTitle }}">
+                                        <span>{{ $navFeatureTitle }}</span>
+                                        <strong>Explore Now <i class="ti ti-arrow-up-right"></i></strong>
+                                    </a>
+                                </aside>
+                            </div>
                         </div>
-                        <div class="mega-menu-column">
-                            <h3>Shop Gaming</h3>
-                            <a href="#">Gaming laptops</a>
-                            <a href="#">Gaming desktops</a>
-                            <a href="#">Graphics cards</a>
-                            <a href="#">Gaming keyboards</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>By Use</h3>
-                            <a href="#">Esports builds</a>
-                            <a href="#">4K gaming</a>
-                            <a href="#">Streaming ready</a>
-                            <a href="#">RGB setups</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Top Brands</h3>
-                            <a href="#">Asus ROG</a>
-                            <a href="#">MSI Gaming</a>
-                            <a href="#">Gigabyte Aorus</a>
-                            <a href="#">Corsair</a>
-                        </div>
-                    </div>
-                </div>
-            </li>
-            <li class="has-mega-menu">
-                <a href="#">Streaming <i class="ti ti-chevron-down"></i></a>
-                <div class="mega-menu">
-                    <div class="mega-menu-inner">
-                        <div class="mega-menu-feature">
-                            <span>Streaming</span>
-                            <strong>Go live cleanly</strong>
-                            <p>Cameras, capture cards, microphones, and creator PCs for smooth production.</p>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Creator Gear</h3>
-                            <a href="#">Webcams</a>
-                            <a href="#">Microphones</a>
-                            <a href="#">Capture cards</a>
-                            <a href="#">Stream decks</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Lighting</h3>
-                            <a href="#">Key lights</a>
-                            <a href="#">Ring lights</a>
-                            <a href="#">LED panels</a>
-                            <a href="#">Background lights</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Workstations</h3>
-                            <a href="#">Editing PCs</a>
-                            <a href="#">Dual PC setups</a>
-                            <a href="#">Storage drives</a>
-                            <a href="#">Audio interfaces</a>
-                        </div>
-                    </div>
-                </div>
-            </li>
-            <li class="has-mega-menu">
-                <a href="#">Components <i class="ti ti-chevron-down"></i></a>
-                <div class="mega-menu">
-                    <div class="mega-menu-inner">
-                        <div class="mega-menu-feature">
-                            <span>Components</span>
-                            <strong>Pick your parts</strong>
-                            <p>Core hardware for upgrades, custom builds, and workstation refreshes.</p>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Core Parts</h3>
-                            <a href="#">Processors</a>
-                            <a href="#">Motherboards</a>
-                            <a href="#">Memory</a>
-                            <a href="#">Storage</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Performance</h3>
-                            <a href="#">Graphics cards</a>
-                            <a href="#">Power supplies</a>
-                            <a href="#">Liquid cooling</a>
-                            <a href="#">Cabinets</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Accessories</h3>
-                            <a href="#">Thermal paste</a>
-                            <a href="#">Case fans</a>
-                            <a href="#">Cable kits</a>
-                            <a href="#">Adapters</a>
-                        </div>
-                    </div>
-                </div>
-            </li>
-            <li class="has-mega-menu">
-                <a href="#">PC Builds <i class="ti ti-chevron-down"></i></a>
-                <div class="mega-menu">
-                    <div class="mega-menu-inner">
-                        <div class="mega-menu-feature">
-                            <span>PC Builds</span>
-                            <strong>Ready to power on</strong>
-                            <p>Curated builds for gaming, editing, office work, and compact desks.</p>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>By Budget</h3>
-                            <a href="#">Under Rs. 50,000</a>
-                            <a href="#">Rs. 50,000 - 1 lakh</a>
-                            <a href="#">Rs. 1 lakh - 2 lakh</a>
-                            <a href="#">Premium builds</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>By Purpose</h3>
-                            <a href="#">Gaming PC</a>
-                            <a href="#">Editing PC</a>
-                            <a href="#">Office PC</a>
-                            <a href="#">Mini PC</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Services</h3>
-                            <a href="#">Custom quote</a>
-                            <a href="#">Assembly</a>
-                            <a href="#">Upgrade advice</a>
-                            <a href="#">Support plans</a>
-                        </div>
-                    </div>
-                </div>
-            </li>
-            <li class="has-mega-menu">
-                <a href="#">Monitors <i class="ti ti-chevron-down"></i></a>
-                <div class="mega-menu">
-                    <div class="mega-menu-inner">
-                        <div class="mega-menu-feature">
-                            <span>Monitors</span>
-                            <strong>Sharper screens</strong>
-                            <p>Fast refresh gaming panels, color-accurate creator displays, and office screens.</p>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Resolution</h3>
-                            <a href="#">Full HD</a>
-                            <a href="#">2K QHD</a>
-                            <a href="#">4K UHD</a>
-                            <a href="#">Ultrawide</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Refresh Rate</h3>
-                            <a href="#">75Hz</a>
-                            <a href="#">144Hz</a>
-                            <a href="#">240Hz</a>
-                            <a href="#">OLED monitors</a>
-                        </div>
-                        <div class="mega-menu-column">
-                            <h3>Use Case</h3>
-                            <a href="#">Gaming</a>
-                            <a href="#">Design</a>
-                            <a href="#">Office</a>
-                            <a href="#">Console</a>
-                        </div>
-                    </div>
-                </div>
-            </li>
-            <li><a href="#">Custom PC Quote</a></li>
-            <li><a href="#">Our Stores</a></li>
+                    @endif
+                </li>
+            @endforeach
         </ul>
-
-        <div class="deal">
-            <i class="ti ti-discount-2"></i>
-            <strong>Asus Graphic Cards</strong>
-        </div>
-
     </div>
 
-</nav>
-
-@php
-    $navCategories = $navCategories ?? collect();
-@endphp
-
-<div class="category-drawer-backdrop" data-category-drawer-close hidden></div>
-
-<aside id="categoryDrawer" class="category-drawer" aria-hidden="true" aria-label="Browse product categories" hidden>
-    <div class="category-drawer-sidebar">
-        <div class="category-drawer-head">
-            <strong>All Categories</strong>
-            <button type="button" class="category-drawer-close" data-category-drawer-close aria-label="Close categories">
+    <div class="mobile-nav-overlay" data-mobile-nav-close></div>
+    <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Mobile navigation" aria-hidden="true">
+        <div class="mobile-drawer-head">
+            <a href="{{ route('home') }}" class="mobile-drawer-logo" aria-label="{{ $siteName }} home">
+                <img src="{{ asset($siteLogoPath ?: $logoFallbackPath) }}" alt="{{ $brandDisplayName }} Logo">
+            </a>
+            <button type="button" class="mobile-drawer-close" aria-label="Close menu" data-mobile-nav-close>
                 <i class="ti ti-x"></i>
             </button>
         </div>
 
-        <ul class="category-drawer-list">
-            @forelse($navCategories as $category)
-                <li class="category-drawer-item">
-                    <a href="{{ route('categories.show', $category->slug) }}" class="category-drawer-link">
-                        @if($category->image)
-                            <img src="{{ asset($category->image) }}" alt="">
-                        @else
-                            <i class="ti ti-category"></i>
-                        @endif
-                        <span>{{ $category->name }}</span>
-                        <i class="ti ti-chevron-right"></i>
-                    </a>
+        <div class="mobile-account-card">
+            <i class="ti ti-user-circle"></i>
+            <div>
+                @auth
+                    <span>{{ auth()->user()->name ?? 'My Account' }}</span>
+                    <strong>{{ auth()->user()->email ?? 'Dashboard' }}</strong>
+                @else
+                    <span>Welcome to Tanvi</span>
+                    <strong>Login for faster checkout</strong>
+                @endauth
+            </div>
+        </div>
 
-                    <div class="category-drawer-panel">
-                        <div class="category-panel-inner">
-                            <div class="category-panel-feature">
-                                <span>{{ $category->name }}</span>
-                                <strong>{{ $category->meta_title ?: $category->name }}</strong>
-                                @if($category->description)
-                                    <p>{{ $category->description }}</p>
-                                @endif
-                            </div>
+        <div class="mobile-account-actions">
+            @auth
+                <a href="{{ route('dashboard') }}"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit"><i class="ti ti-logout"></i> Logout</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}"><i class="ti ti-login-2"></i> Login</a>
+                <a href="{{ route('register') }}"><i class="ti ti-user-plus"></i> Register</a>
+            @endauth
+        </div>
 
-                            <div class="category-panel-links">
-                                <h3>{{ $category->name }}</h3>
-                                <a href="{{ route('categories.show', $category->slug) }}">View all {{ $category->name }}</a>
+        <nav class="mobile-menu-list" aria-label="Mobile menu links">
+            <a href="{{ route('client.products.index') }}#productSearch"><i class="ti ti-search"></i> Search Products</a>
+            <a href="{{ route('home') }}"><i class="ti ti-home"></i> Home</a>
+            <a href="{{ route('labels.show', 'new-arrived') }}"><i class="ti ti-sparkles"></i> New Arrivals</a>
+            <a href="{{ route('labels.show', 'best-product') }}"><i class="ti ti-award"></i> Bestsellers</a>
+            <a href="{{ route('client.products.index') }}"><i class="ti ti-diamond"></i> Products</a>
+            <a href="{{ route('reviews.index') }}"><i class="ti ti-star"></i> Reviews</a>
+            <a href="{{ route('wishlist.index') }}"><i class="ti ti-heart"></i> Wishlist</a>
+            <a href="{{ route('cart.index') }}"><i class="ti ti-shopping-cart"></i> Cart</a>
+            <a href="{{ route('home') }}#contact"><i class="ti ti-phone"></i> Contact</a>
+        </nav>
 
-                                @forelse($category->children as $child)
-                                    <a href="{{ route('categories.show', $child->slug) }}">{{ $child->name }}</a>
-                                @empty
-                                    <span>No subcategories added yet.</span>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            @empty
-                <li class="category-drawer-empty">No categories found.</li>
-            @endforelse
-        </ul>
-    </div>
-</aside>
+        <div class="mobile-drawer-section">
+            <span>Categories</span>
+            <div>
+                @forelse($navCategories->take(8) as $category)
+                    <a href="{{ route('categories.show', $category->slug) }}">{{ $category->name }}</a>
+                @empty
+                    <small>No categories found.</small>
+                @endforelse
+            </div>
+        </div>
+    </aside>
+</nav>
 
+@push('scripts')
 <script>
-    (() => {
-        const drawer = document.getElementById('categoryDrawer');
-        const openButton = document.querySelector('[data-category-drawer-open]');
-        const closeButtons = document.querySelectorAll('[data-category-drawer-close]');
-        const backdrop = document.querySelector('.category-drawer-backdrop');
-        const items = drawer ? drawer.querySelectorAll('.category-drawer-item') : [];
+document.addEventListener('DOMContentLoaded', () => {
+    const nav = document.querySelector('.main-nav');
+    const drawer = document.getElementById('mobileNavDrawer');
+    const toggle = document.querySelector('.mobile-menu-toggle');
+    const closeTargets = document.querySelectorAll('[data-mobile-nav-close]');
 
-        if (!drawer || !openButton || !backdrop) {
-            return;
+    if (!nav || !drawer || !toggle) {
+        return;
+    }
+
+    const setOpen = (open) => {
+        nav.classList.toggle('mobile-nav-is-open', open);
+        document.body.classList.toggle('mobile-nav-lock', open);
+        drawer.setAttribute('aria-hidden', String(!open));
+        toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    toggle.addEventListener('click', () => setOpen(true));
+    closeTargets.forEach((target) => target.addEventListener('click', () => setOpen(false)));
+    drawer.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+
+    const topBar = nav.querySelector('.top-bar');
+    const topHeader = nav.querySelector('.top-header');
+
+    const syncFixedHeaderOffset = () => {
+        const fixedHeight = (topBar?.offsetHeight || 0) + (topHeader?.offsetHeight || 0);
+        document.documentElement.style.setProperty('--tanvi-fixed-header-height', `${fixedHeight}px`);
+        document.documentElement.style.setProperty('--tanvi-topbar-height', `${topBar?.offsetHeight || 0}px`);
+    };
+
+    syncFixedHeaderOffset();
+    window.addEventListener('resize', syncFixedHeaderOffset, { passive: true });
+
+    if ('ResizeObserver' in window) {
+        const headerObserver = new ResizeObserver(syncFixedHeaderOffset);
+        if (topBar) {
+            headerObserver.observe(topBar);
         }
+        if (topHeader) {
+            headerObserver.observe(topHeader);
+        }
+    }
 
-        const setActiveItem = (item) => {
-            if (!item || item.classList.contains('is-active')) {
-                return;
-            }
-
-            items.forEach((categoryItem) => categoryItem.classList.remove('is-active'));
-            item.classList.add('is-active');
-        };
-
-        const clearActiveItem = () => {
-            items.forEach((categoryItem) => categoryItem.classList.remove('is-active'));
-        };
-
-        const openDrawer = () => {
-            drawer.hidden = false;
-            drawer.classList.add('is-open');
-            drawer.setAttribute('aria-hidden', 'false');
-            openButton.setAttribute('aria-expanded', 'true');
-            backdrop.hidden = false;
-            document.body.classList.add('category-drawer-open');
-            clearActiveItem();
-        };
-
-        const closeDrawer = () => {
-            drawer.classList.remove('is-open');
-            drawer.setAttribute('aria-hidden', 'true');
-            openButton.setAttribute('aria-expanded', 'false');
-            backdrop.hidden = true;
-            document.body.classList.remove('category-drawer-open');
-            clearActiveItem();
-            window.setTimeout(() => {
-                if (!drawer.classList.contains('is-open')) {
-                    drawer.hidden = true;
-                }
-            }, 220);
-        };
-
-        openButton.addEventListener('click', openDrawer);
-        closeButtons.forEach((button) => button.addEventListener('click', closeDrawer));
-
-        drawer.addEventListener('pointerover', (event) => {
-            setActiveItem(event.target.closest('.category-drawer-item'));
-        });
-
-        drawer.addEventListener('mouseover', (event) => {
-            setActiveItem(event.target.closest('.category-drawer-item'));
-        });
-
-        drawer.addEventListener('mouseout', (event) => {
-            const currentItem = event.target.closest('.category-drawer-item');
-            const nextItem = event.relatedTarget?.closest?.('.category-drawer-item');
-
-            if (currentItem && currentItem !== nextItem) {
-                currentItem.classList.remove('is-active');
-            }
-        });
-
-        items.forEach((item) => {
-            item.addEventListener('focusin', () => setActiveItem(item));
-            item.addEventListener('focusout', (event) => {
-                if (!item.contains(event.relatedTarget)) {
-                    item.classList.remove('is-active');
-                }
-            });
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                closeDrawer();
-            }
-        });
-    })();
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            setOpen(false);
+        }
+    });
+});
 </script>
+@endpush

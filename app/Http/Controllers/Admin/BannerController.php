@@ -26,11 +26,19 @@ class BannerController extends Controller
     {
         $request->validate([
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'link' => 'nullable|url',
+            'eyebrow' => 'nullable|string|max:80',
+            'title' => 'nullable|string|max:140',
+            'subtitle' => 'nullable|string|max:500',
+            'link' => 'nullable|string|max:255',
+            'button_text' => 'nullable|string|max:60',
         ]);
 
         $data = $request->only([
+            'eyebrow',
+            'title',
+            'subtitle',
             'link',
+            'button_text',
             'priority',
             'position'
         ]);
@@ -65,11 +73,19 @@ class BannerController extends Controller
     {
         $request->validate([
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'link' => 'nullable|url',
+            'eyebrow' => 'nullable|string|max:80',
+            'title' => 'nullable|string|max:140',
+            'subtitle' => 'nullable|string|max:500',
+            'link' => 'nullable|string|max:255',
+            'button_text' => 'nullable|string|max:60',
         ]);
 
         $data = $request->only([
+            'eyebrow',
+            'title',
+            'subtitle',
             'link',
+            'button_text',
             'priority',
             'position'
         ]);
@@ -98,19 +114,13 @@ class BannerController extends Controller
             ->with('success', 'Banner Updated Successfully');
     }
 
-    // ❌ DELETE (FILE + DB)
+    // Move to trash. Files are removed only on permanent delete.
     public function destroy(Banner $banner)
     {
         try {
-
-            // delete image file
-            if ($banner->image && file_exists(public_path($banner->image))) {
-                unlink(public_path($banner->image));
-            }
-
             $banner->delete();
 
-            return back()->with('success', 'Banner Deleted Successfully');
+            return back()->with('success', 'Banner moved to trash successfully');
 
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

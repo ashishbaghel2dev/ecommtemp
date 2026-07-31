@@ -26,11 +26,6 @@
             </div>
 
             <div>
-                <nav class="account-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('home') }}">Home</a>
-                    <i class="ti ti-chevron-right"></i>
-                    <span>Dashboard</span>
-                </nav>
                 <h1>Hello, {{ $user->name }}</h1>
                 <p>Manage your personal details, wishlist, cart, reviews, and account security from one place.</p>
             </div>
@@ -153,7 +148,75 @@
                 </div>
             </section>
 
+            <section class="account-panel account-security-update-panel" id="account-security">
+                <div class="account-panel-head">
+                    <div>
+                        <span>Account Security</span>
+                        <h2>Update password</h2>
+                        <p>Keep your wholesale account protected with a strong password.</p>
+                    </div>
+                </div>
+
+                <form action="{{ route('dashboard.password.update') }}" method="POST" class="account-password-form">
+                    @csrf
+                    @method('PUT')
+
+                    <label>
+                        <span>Current Password</span>
+                        <div class="account-password-input">
+                            <i class="ti ti-lock"></i>
+                            <input type="password" name="current_password" placeholder="Enter current password" autocomplete="current-password" required>
+                        </div>
+                        @error('current_password', 'updatePassword') <small>{{ $message }}</small> @enderror
+                    </label>
+
+                    <label>
+                        <span>New Password</span>
+                        <div class="account-password-input">
+                            <i class="ti ti-shield-lock"></i>
+                            <input type="password" name="password" placeholder="Minimum 8 characters" autocomplete="new-password" required>
+                        </div>
+                        @error('password', 'updatePassword') <small>{{ $message }}</small> @enderror
+                    </label>
+
+                    <label>
+                        <span>Confirm Password</span>
+                        <div class="account-password-input">
+                            <i class="ti ti-checkup-list"></i>
+                            <input type="password" name="password_confirmation" placeholder="Re-enter new password" autocomplete="new-password" required>
+                        </div>
+                    </label>
+
+                    <button type="submit">
+                        <i class="ti ti-key"></i>
+                        Save Password
+                    </button>
+                </form>
+            </section>
+
             <section class="account-lists-grid">
+                <div class="account-panel">
+                    <div class="account-panel-head">
+                        <div>
+                            <span>My Orders</span>
+                            <h2>Order history</h2>
+                        </div>
+                    </div>
+
+                    <div class="account-review-list">
+                        @forelse($recentOrders as $order)
+                            <div>
+                                <strong>{{ $order->order_number }} · ₹{{ number_format((float) $order->grand_total, 2) }}</strong>
+                                <span>{{ ucfirst(str_replace('_', ' ', $order->status)) }} / {{ ucfirst($order->payment_status) }}</span>
+                                <p>{{ $order->items->count() }} item{{ $order->items->count() === 1 ? '' : 's' }} · {{ $order->estimated_delivery_date ? 'ETA '.$order->estimated_delivery_date->format('d M Y') : 'Tracking will be updated soon' }}</p>
+                                <a href="{{ route('checkout.success', $order) }}">View details / invoice</a>
+                            </div>
+                        @empty
+                            <p class="account-empty-text">No orders yet.</p>
+                        @endforelse
+                    </div>
+                </div>
+
                 <div class="account-panel">
                     <div class="account-panel-head">
                         <div>
@@ -216,7 +279,7 @@
                         <div class="account-address-card">
                             <strong>{{ $address->label }} {{ $address->is_default ? '(Default)' : '' }}</strong>
                             <span>{{ $address->name }} / {{ $address->phone }}</span>
-                            <p>{{ $address->address_line_1 }}{{ $address->address_line_2 ? ', ' . $address->address_line_2 : '' }}, {{ $address->city }}, {{ $address->state }} - {{ $address->postal_code }}, {{ $address->country }}</p>
+                            <p>{{ $address->address_line_1 }}{{ $address->address_line_2 ? ', ' . $address->address_line_2 : '' }}{{ $address->landmark ? ', Landmark: '.$address->landmark : '' }}, {{ $address->city }}, {{ $address->state }} - {{ $address->postal_code }}, {{ $address->country }}</p>
                         </div>
                     @empty
                         <p class="account-empty-text">No saved addresses yet. Save an address during checkout and it will appear here.</p>

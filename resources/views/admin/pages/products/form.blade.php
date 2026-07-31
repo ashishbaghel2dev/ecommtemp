@@ -185,8 +185,33 @@
                         @if($product?->images?->isNotEmpty())
                             <div class="existing-images">
                                 @foreach($product->images as $image)
-                                    <div class="image-chip">
-                                        <img src="{{ asset($image->image) }}" alt="{{ $product->name }}">
+                                    <div class="image-manager-card" data-existing-image-card>
+                                        <div class="image-chip">
+                                            <img src="{{ asset($image->image) }}" alt="{{ $product->name }}">
+                                        </div>
+                                        <div class="image-manager-controls">
+                                            <label class="image-main-option">
+                                                <input type="radio"
+                                                    name="main_image_id"
+                                                    value="{{ $image->id }}"
+                                                    {{ $image->is_main ? 'checked' : '' }}>
+                                                Main
+                                            </label>
+                                            <label class="image-sort-option">
+                                                <span>Sort</span>
+                                                <input type="number"
+                                                    name="existing_images[{{ $image->id }}][sort_order]"
+                                                    value="{{ old("existing_images.{$image->id}.sort_order", $image->sort_order ?? $loop->index) }}"
+                                                    min="0">
+                                            </label>
+                                            <label class="image-remove-option">
+                                                <input type="checkbox"
+                                                    name="remove_image_ids[]"
+                                                    value="{{ $image->id }}"
+                                                    data-remove-existing-image>
+                                                Remove
+                                            </label>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -216,6 +241,21 @@
                             <input type="number" name="stock" class="input-control" value="{{ old('stock', $product->stock ?? 0) }}">
                         </div>
 
+                        <div class="form-field">
+                            <label class="input-label">
+                                Minimum Order Qty
+                                <span class="tooltip-hint" tabindex="0" data-tooltip="Wholesale minimum quantity buyers must add for this product.">?</span>
+                            </label>
+                            <input type="number"
+                                name="min_order_qty"
+                                class="input-control"
+                                min="1"
+                                value="{{ old('min_order_qty', $product->min_order_qty ?? 1) }}">
+                            @error('min_order_qty') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-two-col">
                         <div class="form-field">
                             <label class="input-label">Inventory</label>
                             <div class="check-grid">

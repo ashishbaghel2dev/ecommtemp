@@ -48,12 +48,36 @@
 
                     <div class="form-field">
                         <label class="input-label">Link</label>
-                        <input type="url" name="link" class="input-control" value="{{ old('link') }}" placeholder="https://example.com">
+                        <input type="text" name="link" class="input-control" value="{{ old('link') }}" placeholder="/products or https://example.com">
                         @error('link') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label class="input-label">Button Text</label>
+                        <input type="text" name="button_text" class="input-control" value="{{ old('button_text') }}" placeholder="Shop Now">
+                        @error('button_text') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
                 </div>
 
                 <div class="product-panel">
+                    <div class="form-field">
+                        <label class="input-label">Small Label</label>
+                        <input type="text" name="eyebrow" class="input-control" value="{{ old('eyebrow') }}" placeholder="Go Sowa Herbal Tea">
+                        @error('eyebrow') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label class="input-label">Banner Title</label>
+                        <input type="text" name="title" class="input-control" value="{{ old('title') }}" placeholder="Premium Herbal Tea Collection">
+                        @error('title') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label class="input-label">Banner Description</label>
+                        <textarea name="subtitle" class="input-control" rows="4" placeholder="Short banner message">{{ old('subtitle') }}</textarea>
+                        @error('subtitle') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
                     <div class="form-two-col">
                         <div class="form-field">
                             <label class="input-label">Priority</label>
@@ -63,6 +87,7 @@
                         <div class="form-field">
                             <label class="input-label">Position</label>
                             <input type="text" name="position" class="input-control" value="{{ old('position', 'home_slider') }}">
+                            <small class="field-help">Use <code>home_slider</code> for hero carousel or <code>offer_banner</code> for the 4-card offer grid.</small>
                         </div>
                     </div>
 

@@ -77,6 +77,20 @@
     overflow: hidden;
 }
 
+.admin-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-table-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.admin-table-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #cbd5e1;
+}
+
 .custom-table {
     width: 100%;
     border-collapse: collapse;
@@ -110,6 +124,117 @@
     border-top: 1px solid #f1f5f9;
     color: #334155;
     font-size: var(--font-size-base);
+}
+
+.custom-table td,
+.custom-table th {
+    overflow-wrap: anywhere;
+}
+
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-top: 1px solid #edf2f7;
+    background: #ffffff;
+}
+
+.admin-pagination-summary {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.admin-pagination-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.admin-page-btn {
+    display: inline-grid;
+    min-width: 36px;
+    height: 36px;
+    place-items: center;
+    padding: 0 10px;
+    border: 1px solid #dbe4ef;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.admin-page-btn:hover {
+    border-color: var(--bg-primary);
+    color: var(--bg-primary);
+}
+
+.admin-page-btn.active {
+    border-color: var(--bg-primary);
+    background: var(--bg-primary);
+    color: #ffffff;
+}
+
+.admin-page-btn.disabled,
+.admin-page-btn.dots {
+    cursor: not-allowed;
+    opacity: .45;
+}
+
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 14px 16px;
+    margin: 0;
+    border-top: 1px solid #edf2f7;
+    background: #ffffff;
+    list-style: none;
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-link {
+    display: inline-grid;
+    min-width: 36px;
+    height: 36px;
+    place-items: center;
+    padding: 0 10px;
+    border: 1px solid #dbe4ef;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.page-link:hover {
+    border-color: var(--bg-primary);
+    color: var(--bg-primary);
+}
+
+.page-item.active .page-link {
+    border-color: var(--bg-primary);
+    background: var(--bg-primary);
+    color: #ffffff;
+}
+
+.page-item.disabled .page-link {
+    cursor: not-allowed;
+    opacity: .45;
 }
 
 .table-img {

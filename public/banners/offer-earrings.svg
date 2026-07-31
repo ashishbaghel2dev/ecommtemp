@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-label="Earrings offer banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d7efe9"/>
+      <stop offset=".55" stop-color="#fff8eb"/>
+      <stop offset="1" stop-color="#b96853"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="420" fill="url(#bg)"/>
+  <circle cx="685" cy="165" r="82" fill="#f2c66f" opacity=".95"/>
+  <circle cx="760" cy="245" r="98" fill="#8b252b" opacity=".82"/>
+  <g transform="translate(610 90)" fill="none" stroke-linecap="round">
+    <path d="M70 0v56" stroke="#fff8de" stroke-width="8"/>
+    <path d="M150 0v56" stroke="#fff8de" stroke-width="8"/>
+    <path d="M40 88c0 52 60 104 60 104s60-52 60-104" stroke="#fff5d3" stroke-width="13"/>
+    <path d="M120 88c0 52 60 104 60 104s60-52 60-104" stroke="#fff5d3" stroke-width="13"/>
+    <circle cx="100" cy="198" r="20" fill="#f9d27c" stroke="#7b2027" stroke-width="5"/>
+    <circle cx="180" cy="198" r="20" fill="#f9d27c" stroke="#7b2027" stroke-width="5"/>
+  </g>
+  <path d="M0 60c140 64 286 45 430 12 142-34 284-36 470 34V0H0z" fill="#fff" opacity=".23"/>
+</svg>

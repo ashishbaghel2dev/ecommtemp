@@ -245,6 +245,28 @@ textarea.input-control {
     gap: 10px;
 }
 
+.image-manager-card {
+    width: 132px;
+    display: grid;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    transition: border-color 0.16s ease, background-color 0.16s ease, opacity 0.16s ease;
+}
+
+.image-manager-card.is-marked-remove {
+    border-color: #fecaca;
+    background: #fff7f7;
+    opacity: 0.72;
+}
+
+.image-manager-card .image-chip {
+    width: 100%;
+    height: 94px;
+}
+
 .image-chip {
     width: 76px;
     height: 76px;
@@ -258,6 +280,40 @@ textarea.input-control {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.image-manager-controls {
+    display: grid;
+    gap: 6px;
+}
+
+.image-main-option,
+.image-remove-option,
+.image-sort-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.image-sort-option {
+    justify-content: space-between;
+}
+
+.image-sort-option input {
+    width: 58px;
+    min-height: 30px;
+    padding: 4px 6px;
+    border: 1px solid #dfe3ea;
+    border-radius: 6px;
+    color: #111827;
+    font-size: 12px;
+}
+
+.image-remove-option {
+    color: #991b1b;
 }
 
 .editor-toolbar {

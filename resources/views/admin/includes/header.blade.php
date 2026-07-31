@@ -1,7 +1,10 @@
 <header class="dashboard-header-box">
 
     <div class="dashboard-left">
-
+        <div class="dashboard-title-chip">
+            <span>{{ $adminSettings['dashboard_label'] ?? 'Admin Dashboard' }}</span>
+            <strong>{{ $adminSettings['app_name'] ?? config('app.name') }}</strong>
+        </div>
 
     </div>
     <div class="dashboard-right">

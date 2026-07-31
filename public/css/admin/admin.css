@@ -9,8 +9,13 @@
 
 @import './layout/navbar.css';
 @import './layout/sidebar.css';
+@import '../components/toast.css';
 
 
 @import './pages/category.css';
 @import './pages/form.css';
+@import './pages/content-management.css';
 @import './pages/products/form.css';
+@import './pages/settings.css';
+@import './pages/dashboard.css';
+@import './pages/sales.css';

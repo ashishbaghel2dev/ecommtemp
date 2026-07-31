@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductAttributeValue;
 use App\Models\ProductVariant;
 use App\Services\CartService;
+use App\Services\CouponService;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -16,10 +17,12 @@ class CartController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(CouponService $couponService)
     {
         $cart = $this->cartService->getCart();
         $cart->load(['items.variant', 'items.product']);
+        $couponService->recalculateCart($cart, auth()->user());
+        $cart->refresh()->load(['items.variant', 'items.product']);
 
         return view('client.pages.task.cart', compact('cart'));
     }
@@ -37,6 +40,14 @@ class CartController extends Controller
         $product = Product::query()
             ->with(['attributeValues', 'variants'])
             ->findOrFail($validated['product_id']);
+
+        $minOrderQty = max(1, (int) ($product->min_order_qty ?? 1));
+        if ((int) $validated['quantity'] < $minOrderQty) {
+            return response()->json([
+                'status' => false,
+                'message' => "Minimum order quantity for this product is {$minOrderQty}.",
+            ], 422);
+        }
 
         $pavIds = collect($validated['selected_product_attribute_value_ids'] ?? [])
             ->filter()
@@ -120,7 +131,7 @@ class CartController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Product added to cart',
-            'cart' => $this->cartService->getCart(),
+            'cart' => $this->cartPayload(),
             'item' => $item,
         ]);
     }
@@ -151,7 +162,7 @@ class CartController extends Controller
             'status' => true,
             'message' => 'Quantity increased',
             'item' => $item,
-            'cart' => $this->cartService->getCart(),
+            'cart' => $this->cartPayload(),
         ]);
     }
 
@@ -163,7 +174,7 @@ class CartController extends Controller
             'status' => true,
             'message' => 'Quantity decreased',
             'item' => $item,
-            'cart' => $this->cartService->getCart(),
+            'cart' => $this->cartPayload(),
         ]);
     }
 
@@ -174,7 +185,7 @@ class CartController extends Controller
         return response()->json([
             'status' => $success,
             'message' => $success ? 'Item removed' : 'Failed to remove item',
-            'cart' => $this->cartService->getCart(),
+            'cart' => $this->cartPayload(),
         ]);
     }
 
@@ -185,7 +196,25 @@ class CartController extends Controller
         return response()->json([
             'status' => $success,
             'message' => $success ? 'Cart cleared' : 'Failed to clear cart',
-            'cart' => $this->cartService->getCart(),
+            'cart' => $this->cartPayload(),
         ]);
+    }
+
+    private function cartPayload(): array
+    {
+        $cart = $this->cartService->getCart()->fresh('items');
+        $productDiscount = (float) $cart->items->sum('discount_amount');
+
+        return [
+            'total_items' => (int) $cart->total_items,
+            'total_quantity' => (int) $cart->total_quantity,
+            'product_total' => (float) $cart->subtotal + $productDiscount,
+            'product_discount_total' => $productDiscount,
+            'subtotal' => (float) $cart->subtotal,
+            'discount_total' => (float) $cart->discount_total,
+            'shipping_total' => (float) $cart->shipping_total,
+            'tax_total' => (float) $cart->tax_total,
+            'grand_total' => (float) $cart->grand_total,
+        ];
     }
 }

@@ -6,13 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
+use App\Services\CartService;
+use App\Services\StoreMailService;
+use App\Services\WishlistService;
 
 
-class RegisterController 
+class RegisterController extends Controller
 {
 
     /**
@@ -28,86 +28,74 @@ class RegisterController
      * DEFAULT REGISTER (EMAIL)
      * -------------------------
      */
-public function register(Request $request)
+public function register(
+    Request $request,
+    CartService $cartService,
+    WishlistService $wishlistService,
+    StoreMailService $storeMailService
+)
 {
     $request->validate([
         'name' => 'required|string|max:255',
         'email' => 'required|email|unique:users,email',
+        'phone' => 'required|digits:10',
         'password' => 'required|min:8|confirmed',
+        'redirect_to' => 'nullable|string|max:255',
     ]);
 
-    // 🔢 Generate OTP
-    $otp = rand(100000, 999999);
-
-    // 🧠 Store in session (temporary)
-    session([
-        'register_data' => [
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'otp' => $otp,
-            'otp_expires_at' => now()->addMinutes(10),
-        ]
-    ]);
-
-    // 📧 Send OTP
-    Mail::raw("Your OTP is: $otp", function ($message) use ($request) {
-        $message->to($request->email)
-                ->subject('Your OTP Code');
-    });
-
-    return redirect()->route('otp.form')
-        ->with('success', 'OTP sent to your email');
-}
-
-    
-
-public function showOtpForm()
-{
-    return view('auth.verifyOtp');
-}
-
-public function verifyOtp(Request $request)
-{
-    $request->validate([
-        'otp' => 'required',
-    ]);
-
-    $data = session('register_data');
-
-    if (!$data) {
-        return redirect()->route('register')->withErrors(['Session expired']);
+    if (User::whereIn('phone', $this->phoneLookupValues($request->phone))->exists()) {
+        return back()->withInput()->withErrors(['phone' => 'This mobile number is already registered.']);
     }
 
-    // ❌ Wrong OTP
-    if ($data['otp'] != $request->otp) {
-        return back()->withErrors(['Invalid OTP']);
-    }
+    $guestSessionId = session()->getId();
 
-    // ⏳ Expired
-    if ($data['otp_expires_at'] < now()) {
-        return back()->withErrors(['OTP expired']);
-    }
-
-    // ✅ CREATE USER NOW
     $user = User::create([
-        'name' => $data['name'],
-        'email' => $data['email'],
-        'password' => $data['password'],
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $this->formatMobile($request->phone),
+        'password' => Hash::make($request->password),
         'role' => 'user',
         'status' => true,
         'email_verified_at' => now(),
+        'phone_verified_at' => now(),
+        'last_login_at' => now(),
+        'last_login_ip' => $request->ip(),
     ]);
 
-    // 🧹 Clear session
-    session()->forget('register_data');
-
-    // 🔐 Login
     Auth::login($user);
+    $request->session()->regenerate();
+    $cartService->claimGuestCartForUser((int) $user->id, $guestSessionId);
+    $wishlistService->mergeGuestWishlist();
+    $cartService->mergeGuestCart();
+    $storeMailService->userLoggedIn($user, 'new email/mobile registration', $request);
 
-    return redirect('/dashboard')->with('success', 'Account created & verified!');
+    if ($request->redirect_to === 'checkout') {
+        return redirect()->route('checkout.index')->with('success', 'Account created. Continue checkout.');
+    }
+
+    return redirect()->route('dashboard')->with('success', 'Account created successfully.');
 }
 
+private function formatMobile(string $phone): string
+{
+    return substr(preg_replace('/\D+/', '', $phone), -10);
+}
+
+private function phoneLookupValues(string $phone): array
+{
+    $digits = preg_replace('/\D+/', '', $phone);
+    $mobile = $this->formatMobile($digits);
+    $national = str_starts_with($mobile, '91') ? substr($mobile, 2) : $mobile;
+
+    return array_values(array_unique(array_filter([
+        $phone,
+        $digits,
+        $mobile,
+        '+'.$mobile,
+        $national,
+        '0'.$national,
+    ])));
+}
 
 
 

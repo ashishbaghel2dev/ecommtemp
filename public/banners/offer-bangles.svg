@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-label="Bangles offer banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#f5dad0"/>
+      <stop offset=".5" stop-color="#fff7ec"/>
+      <stop offset="1" stop-color="#6d453e"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="420" fill="url(#bg)"/>
+  <g transform="translate(575 68)" fill="none">
+    <ellipse cx="118" cy="142" rx="138" ry="90" stroke="#7d2327" stroke-width="18" transform="rotate(-18 118 142)"/>
+    <ellipse cx="155" cy="160" rx="138" ry="90" stroke="#f4c46e" stroke-width="18" transform="rotate(-18 155 160)"/>
+    <ellipse cx="190" cy="178" rx="138" ry="90" stroke="#fff3d5" stroke-width="8" transform="rotate(-18 190 178)"/>
+  </g>
+  <g fill="#ffffff" opacity=".65">
+    <circle cx="636" cy="150" r="5"/><circle cx="690" cy="128" r="5"/><circle cx="744" cy="122" r="5"/><circle cx="796" cy="140" r="5"/>
+  </g>
+  <path d="M0 360c120-35 270-25 430 12 155 35 300 28 470-28v76H0z" fill="#8b252b" opacity=".12"/>
+</svg>

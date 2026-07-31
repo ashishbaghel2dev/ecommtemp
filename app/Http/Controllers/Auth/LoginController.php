@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Services\StoreMailService;
 use App\Services\WishlistService;
 use App\Services\CartService;
 
@@ -23,7 +25,13 @@ class LoginController extends Controller
 
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        if (request('redirect') === 'checkout') {
+            session(['url.intended' => route('checkout.index')]);
+        }
+
+        return Socialite::driver('google')
+            ->redirectUrl(route('auth.google.callback'))
+            ->redirect();
     }
 
     public function handleGoogleCallback(
@@ -36,37 +44,6 @@ class LoginController extends Controller
             $cartService
         );
     }
-
-
-
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | FACEBOOK LOGIN
-    |--------------------------------------------------------------------------
-    */
-
-    public function redirectToFacebook()
-    {
-        return Socialite::driver('facebook')->redirect();
-    }
-
-    public function handleFacebookCallback(
-        WishlistService $wishlistService,
-        CartService $cartService
-    ) {
-        return $this->socialLogin(
-            'facebook',
-            $wishlistService,
-            $cartService
-        );
-    }
-
-
-
-
 
 
     /*
@@ -82,7 +59,13 @@ class LoginController extends Controller
     ) {
         try {
 
-            $socialUser = Socialite::driver($provider)->user();
+            $driver = Socialite::driver($provider);
+
+            if ($provider === 'google') {
+                $driver->redirectUrl(route('auth.google.callback'));
+            }
+
+            $socialUser = $driver->user();
 
 
 
@@ -136,6 +119,12 @@ class LoginController extends Controller
 
                 ]);
 
+                app(StoreMailService::class)->userLoggedIn(
+                    $user,
+                    'new '.$provider.' registration',
+                    request()
+                );
+
             }
 
 
@@ -149,9 +138,9 @@ class LoginController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            Auth::login($user);
-
             $guestSessionId = session()->getId();
+
+            Auth::login($user);
 
             request()->session()->regenerate();
 
@@ -215,7 +204,7 @@ class LoginController extends Controller
 
             }
 
-            return redirect('/dashboard');
+            return redirect()->intended('/dashboard');
 
         } catch (Exception $e) {
 
@@ -243,6 +232,10 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
+        if (request('redirect') === 'checkout') {
+            session(['url.intended' => route('checkout.index')]);
+        }
+
         return view('auth.login');
     }
 
@@ -271,17 +264,15 @@ class LoginController extends Controller
 
         $request->validate([
 
-            'email' => 'required|email',
+            'login' => 'required|string',
 
             'password' => 'required|min:8',
+            'redirect_to' => 'nullable|string|max:255',
 
         ], [
 
-            'email.required' =>
-                'Email is required',
-
-            'email.email' =>
-                'Please enter valid email',
+            'login.required' =>
+                'Email or mobile number is required',
 
             'password.required' =>
                 'Password is required',
@@ -302,31 +293,37 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (!Auth::attempt(
-            $request->only('email', 'password')
-        )) {
+        $login = trim($request->input('login'));
+        $user = null;
+
+        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            $user = User::where('email', $login)->first();
+        } else {
+            $phone = preg_replace('/\D+/', '', $login);
+
+            if (strlen($phone) !== 10) {
+                return back()->withErrors([
+                    'login' => 'Mobile number must be exactly 10 digits',
+                ])->withInput($request->only('login', 'redirect_to'));
+            }
+
+            $user = User::whereIn('phone', array_unique([$phone, '91'.$phone, '+91'.$phone, '0'.$phone]))->first();
+        }
+
+        if (! $user || ! Hash::check($request->input('password'), $user->password)) {
 
             return back()->withErrors([
 
-                'email' =>
-                    'Invalid email or password',
+                'login' =>
+                    'Invalid email/mobile number or password',
 
             ]);
 
         }
 
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | SECURITY
-        |--------------------------------------------------------------------------
-        */
-
         $guestSessionId = session()->getId();
+
+        Auth::login($user);
 
         $request->session()->regenerate();
 
@@ -350,11 +347,6 @@ class LoginController extends Controller
             'last_login_ip' => $request->ip(),
 
         ]);
-
-
-
-
-
 
         /*
         |--------------------------------------------------------------------------
@@ -393,7 +385,11 @@ class LoginController extends Controller
 
         }
 
-        return redirect('/dashboard');
+        if ($request->input('redirect_to') === 'checkout') {
+            return redirect()->route('checkout.index');
+        }
+
+        return redirect()->intended('/dashboard');
     }
 
 

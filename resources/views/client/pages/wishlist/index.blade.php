@@ -11,7 +11,7 @@
         <section class="wishlist-shell">
             <div class="wishlist-head">
                 <div>
-                    <span>Saved products</span>
+                   
                     <h1>Your Wishlist</h1>
                 </div>
 
@@ -29,11 +29,21 @@
                         </a>
 
                         <div class="wishlist-card-body">
-                            <span>{{ $product->category->name ?? 'Product' }}</span>
-                            <a href="{{ route('products.show', ['product' => $product->slug]) }}">{{ $product->name }}</a>
-                            <p>{{ \Illuminate\Support\Str::limit($product->short_description ?? $product->description ?? 'Quality product for your setup.', 76) }}</p>
+                          
+                            <a href="{{ route('products.show', ['product' => $product->slug]) }}">
+                                <h3>{{ $product->name }}</h3>
+                        </a>
+
+
+                        <p>
+                            Details: {{ \Illuminate\Support\Str::limit(strip_tags($product->short_description ?? $product->description ?? ''), 42) }}
+                        </p>
+
+                        
+
 
                             <div class="wishlist-card-foot">
+                                
                                 <strong>Rs. {{ number_format((float) $product->final_price, 2) }}</strong>
 
                                 <div>
@@ -76,22 +86,28 @@
         });
 
         function updateWishlistNavbar(count) {
-            const badge = document.querySelector('[data-navbar-wishlist-count]');
-            if (badge) {
-                badge.innerText = count;
+            if (window.updateNavbarWishlistCount) {
+                window.updateNavbarWishlistCount(count);
+                return;
             }
+
+            document.querySelectorAll('[data-navbar-wishlist-count]').forEach((badge) => {
+                badge.innerText = count;
+            });
         }
 
         function updateCartNavbar(cart) {
-            const count = document.querySelector('[data-navbar-cart-count]');
-            const total = document.querySelector('[data-navbar-cart-total]');
+            if (window.updateNavbarCartSummary) {
+                window.updateNavbarCartSummary(cart);
+                return;
+            }
 
-            if (count) {
+            document.querySelectorAll('[data-navbar-cart-count]').forEach((count) => {
                 count.innerText = cart?.total_quantity ?? 0;
-            }
-            if (total) {
+            });
+            document.querySelectorAll('[data-navbar-cart-total]').forEach((total) => {
                 total.innerText = formatNavbarMoney(cart?.grand_total ?? cart?.subtotal ?? 0);
-            }
+            });
         }
 
         function renderEmptyWishlist() {

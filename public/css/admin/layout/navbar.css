@@ -8,9 +8,28 @@
     background-color:var(--bg-white);
     justify-content: space-between !important;
     width: 100%;
-    padding: 10px 10px;
-    box-shadow: var(--line-shadow);
+    padding: 12px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, .03);
     align-items: center;
+}
+
+.dashboard-title-chip {
+    display: grid;
+    gap: 2px;
+}
+
+.dashboard-title-chip span {
+    color: var(--bg-primary);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.dashboard-title-chip strong {
+    color: #111827;
+    font-size: 18px;
+    font-weight: 900;
 }
 
 .dashboard-toggle-btn {
@@ -198,4 +217,46 @@
         border-radius: var(--standard-border-radius);
 
 
+}
+
+/* Compact professional admin header */
+.dashboard-header-box {
+    min-height: 56px;
+    padding: 8px 16px;
+}
+
+.dashboard-title-chip span {
+    color: #64748b;
+    font-size: 10px;
+    letter-spacing: .04em;
+}
+
+.dashboard-title-chip strong {
+    font-size: 14px;
+}
+
+.header-icon-right {
+    gap: 4px;
+}
+
+.header-icon-right i {
+    color: #64748b;
+    font-size: 19px;
+    padding: 5px;
+}
+
+.profile-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+}
+
+.profile-menu a,
+.profile-menu button,
+.notif-item {
+    font-size: 12px;
+}
+
+.notify-item-head {
+    font-size: 13px;
 }
